@@ -27,7 +27,7 @@ class RecurringBillService
         $rules = RecurringBill::with(['biller', 'category', 'subcategory', 'account', 'frequency'])
             ->where('user_id', $userId)
             ->where('start_date', '<=', $monthEnd)
-            ->where('end_date', '>=', $monthStart)
+            ->where(fn ($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', $monthStart))
             ->get();
 
         // Index paid payments for this month by rule_id + date
@@ -44,7 +44,7 @@ class RecurringBillService
 
         foreach ($rules as $rule) {
             $date    = $rule->start_date->copy();
-            $endDate = $rule->end_date->copy();
+            $endDate = $rule->end_date ? $rule->end_date->copy() : $monthEnd;
 
             while ($date->lte($endDate)) {
                 if ($date->year === $year && $date->month === $month) {
