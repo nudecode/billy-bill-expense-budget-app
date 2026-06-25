@@ -23,7 +23,7 @@
                         <th class="text-left px-5 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400 hidden md:table-cell">Start Date</th>
                         <th class="text-left px-5 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400 hidden md:table-cell">End Date</th>
                         <th class="text-left px-5 py-3 text-[10.5px] font-bold uppercase tracking-widests text-slate-400 hidden lg:table-cell">Status</th>
-                        <th class="px-2 sm:px-5 py-3 w-20 sm:w-24"></th>
+                        <th class="px-2 sm:px-5 py-3 w-24"></th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">

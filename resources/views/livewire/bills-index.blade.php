@@ -254,7 +254,7 @@
                         <th class="text-left px-5 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400">Due Date</th>
                         <th class="text-left px-5 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400">Amount</th>
                         <th class="text-left px-5 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400">Status</th>
-                        <th class="px-2 sm:px-5 py-3 w-20 sm:w-24"></th>
+                        <th class="px-2 sm:px-5 py-3 w-24"></th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
