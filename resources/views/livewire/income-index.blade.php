@@ -23,7 +23,7 @@
                 </div>
                 <div>
                     <div class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Total Income</div>
-                    <div class="font-mono text-[17px] font-bold text-blue-600">+${{ number_format($total, 2) }}</div>
+                    <div class="font-mono text-[13px] sm:text-[17px] font-bold text-blue-600">+${{ number_format($total, 2) }}</div>
                 </div>
             </div>
         </div>
