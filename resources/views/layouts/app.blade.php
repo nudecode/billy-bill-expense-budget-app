@@ -46,15 +46,26 @@
     }"
     class="fixed inset-y-0 left-0 z-30 flex flex-col bg-white border-r border-gray-200 transition-all duration-300 ease-in-out lg:translate-x-0"
 >
-    {{-- Logo --}}
-    <div class="flex items-center h-16 px-4 border-b border-gray-100 flex-shrink-0 overflow-hidden">
+    {{-- Logo + collapse toggle --}}
+    <div x-data class="flex items-center h-16 px-4 border-b border-gray-100 flex-shrink-0 overflow-hidden gap-2">
         <div class="w-8 h-8 rounded-lg bg-green-600 flex items-center justify-center text-white flex-shrink-0 shadow-sm shadow-green-200">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
         </div>
-        <span x-show="!$store.nav.collapsed" x-cloak x-transition:enter="transition-opacity duration-200 delay-100" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="ml-3 font-bold text-gray-900 text-[15px] tracking-tight whitespace-nowrap">Billy</span>
-        <span x-show="!$store.nav.collapsed" x-cloak class="ml-1 font-mono text-[10px] text-gray-400 whitespace-nowrap">budget</span>
+        <span x-show="!$store.nav.collapsed" x-cloak x-transition:enter="transition-opacity duration-200 delay-100" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="font-bold text-gray-900 text-[15px] tracking-tight whitespace-nowrap">Billy</span>
+        <span x-show="!$store.nav.collapsed" x-cloak class="font-mono text-[10px] text-gray-400 whitespace-nowrap">budget</span>
+
+        {{-- Collapse toggle — desktop only, sits at top-right of logo row --}}
+        <button
+            @click="$store.nav.toggle()"
+            :title="$store.nav.collapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+            class="hidden lg:flex ml-auto p-1.5 rounded-lg text-gray-300 hover:text-gray-500 hover:bg-gray-100 transition-colors flex-shrink-0"
+        >
+            <svg :class="$store.nav.collapsed ? 'rotate-180' : ''" class="w-4 h-4 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/>
+            </svg>
+        </button>
     </div>
 
     {{-- Nav --}}
@@ -119,19 +130,6 @@
         </x-nav-item>
 
     </nav>
-
-    {{-- Collapse toggle — desktop only --}}
-    <div x-data class="hidden lg:flex items-center border-t border-gray-100 p-2" :class="$store.nav.collapsed ? 'justify-center' : 'justify-end'">
-        <button
-            @click="$store.nav.toggle()"
-            :title="$store.nav.collapsed ? 'Expand sidebar' : 'Collapse sidebar'"
-            class="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-        >
-            <svg x-data :class="$store.nav.collapsed ? 'rotate-180' : ''" class="w-4 h-4 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/>
-            </svg>
-        </button>
-    </div>
 
     {{-- User footer --}}
     <div x-data class="flex-shrink-0 border-t border-gray-100 p-2 overflow-hidden">
