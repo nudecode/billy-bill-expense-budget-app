@@ -2,6 +2,16 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Working with Glen — read this first
+
+Glen is not a professional developer but can read and understand code. He knows enough to follow along and enough to get into trouble.
+
+**Do not just agree with him.** If he suggests something that will cause a problem — a security hole, technical debt, a broken workflow — say so directly and explain why before doing it. He explicitly asked to be challenged.
+
+**Always explain WHY, not just what.** "We need an index on this column" is incomplete. Explain what happens without it: "Without an index, every time the app looks up your payments it has to read every single row in the table — fine with 100 rows, painful with 10,000." Make the consequence real.
+
+**Don't assume gaps are understood.** If something non-obvious is happening, name it and explain it in plain English alongside any code.
+
 ## What this app is
 
 Billy is a personal bill and expense budget tracker. It replaces an MS Access database the user currently uses. It is based on the [HomeBudget app by Anishu](https://www.anishu.com/homebudget.html) which the user currently uses on mobile.
@@ -108,6 +118,83 @@ Financial figures always use the `font-mono` class (JetBrains Mono).
 | DTOs | `app/DTOs/BillInstance.php`, `app/DTOs/IncomeInstance.php` |
 | Models | `app/Models/` |
 | Seeders (real data) | `database/seeders/DemoUserSeeder.php` |
+
+## Development workflow
+
+Every piece of work follows this path. Do not skip steps.
+
+### 1. Start from a GitHub issue
+
+```bash
+gh issue list                        # see what's open
+gh issue view 42                     # read the detail before touching any code
+```
+
+Never start coding without an issue. The issue is the record of *why* the work exists.
+
+### 2. Create a branch off `staging` (not `main`)
+
+```bash
+git checkout staging
+git pull origin staging              # make sure you're starting from the latest
+git checkout -b feature/42-add-biller-form
+```
+
+**Why `staging` not `main`?** `main` is production code. If you branch off `main`, your new work is sitting on top of production — when you PR back it goes straight to live users with no safety net. Branching off `staging` means your work merges into the test environment first.
+
+**Naming:** `feature/42-description` for new things, `fix/42-description` for bugs. The number is the GitHub issue number — it creates a traceable link from code back to the reason it was written.
+
+### 3. Write the code AND the tests together
+
+Don't write all the code first and tests later. Write a failing test, make it pass, move on. This is called TDD (Test-Driven Development) and it matters because:
+- It forces you to think about what "done" actually looks like before you start
+- It catches bugs at the moment they're introduced, not three weeks later
+- It means you have proof the feature works when you open the PR
+
+```bash
+php artisan test --filter=BillerTest  # run just your test while working
+php artisan test                       # run everything before pushing
+```
+
+### 4. Lint before pushing
+
+```bash
+./vendor/bin/pint                     # auto-fixes code style
+```
+
+Pint enforces consistent formatting across the whole codebase. It's not about preference — it means any future developer (or Claude instance) reading the code doesn't have to mentally parse inconsistent spacing and conventions.
+
+### 5. Push and open a PR to `staging`
+
+```bash
+git push -u origin feature/42-add-biller-form
+gh pr create --base staging --title "Add biller create/edit form" --body "Closes #42"
+```
+
+**Why `--base staging`?** The PR target is `staging`, not `main`. This is the safety net: the code gets reviewed and (eventually) tested on the staging server before it ever touches production.
+
+The `Closes #42` in the body automatically closes the issue when the PR merges — no manual cleanup needed.
+
+### 6. Merge staging → main for production
+
+Once the feature is tested on the staging server:
+
+```bash
+gh pr create --base main --head staging --title "Release: biller forms" --body "Merges tested staging into production"
+```
+
+### Testing approach
+
+**Unit tests** — test the service layer in isolation (no database, no HTTP):
+- `RecurringBillService` date arithmetic: weekly/fortnightly/monthly/quarterly instances for edge cases (month boundaries, end dates, leap years)
+- `RecurringIncomeService` same
+
+**Feature tests** — test Livewire components through HTTP (uses test database):
+- Each Livewire action (`markPaid`, `save`, `delete`) gets a test asserting the database changed correctly
+- Each page gets a smoke test asserting it loads and shows the right data for the authenticated user
+- Always test that a user cannot see another user's data (the `user_id` scoping)
+
+Test files live in `tests/Feature/` and `tests/Unit/`. Name them after what they test: `RecurringBillServiceTest.php`, `BillsIndexTest.php`.
 
 ## What's not built yet
 
