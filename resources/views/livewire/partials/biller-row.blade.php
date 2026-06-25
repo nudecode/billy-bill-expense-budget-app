@@ -10,12 +10,12 @@
     </td>
     <td class="px-5 py-3.5 text-[13px] text-slate-500 hidden sm:table-cell">{{ $biller->email ?? '—' }}</td>
     <td class="px-5 py-3.5 text-[13px] text-slate-500 hidden md:table-cell">{{ $biller->phone ?? '—' }}</td>
-    <td class="px-5 py-3.5 text-right">
+    <td class="px-3 sm:px-5 py-3.5 text-right">
         <span class="font-mono text-[13px] font-semibold {{ $biller->payments_sum_amount > 0 ? 'text-slate-900' : 'text-slate-300' }}">
             ${{ number_format($biller->payments_sum_amount ?? 0, 2) }}
         </span>
     </td>
-    <td class="px-2 sm:px-5 py-3.5">
+    <td class="pl-2 pr-4 sm:px-5 py-3.5">
         <div class="flex items-center gap-1 justify-end lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
             <button wire:click="openEdit({{ $biller->id }})"
                     class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-700 transition-all"
