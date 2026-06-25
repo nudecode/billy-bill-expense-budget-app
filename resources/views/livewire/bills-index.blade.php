@@ -254,7 +254,7 @@
                         <th class="text-left px-5 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400">Due Date</th>
                         <th class="text-left px-5 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400">Amount</th>
                         <th class="text-left px-5 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400">Status</th>
-                        <th class="px-5 py-3"></th>
+                        <th class="px-2 sm:px-5 py-3 w-20 sm:w-24"></th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
@@ -286,7 +286,7 @@
                                 <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11.5px] font-semibold bg-slate-100 text-slate-500"><span class="w-1.5 h-1.5 rounded-full bg-slate-400 flex-shrink-0"></span>Due</span>
                             @endif
                         </td>
-                        <td class="px-5 py-3.5">
+                        <td class="px-2 sm:px-5 py-3.5">
                             <div class="flex items-center gap-1 justify-end lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                                 @if(!$bill->isPaid)
                                 @php $isOverdue = $bill->date->toDateString() < $today; @endphp

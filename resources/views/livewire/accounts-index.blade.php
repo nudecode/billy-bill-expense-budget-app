@@ -13,7 +13,7 @@
             <thead>
                 <tr class="bg-slate-50 border-b border-slate-200">
                     <th class="text-left px-5 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400">Account Name</th>
-                    <th class="px-5 py-3"></th>
+                    <th class="px-2 sm:px-5 py-3 w-20 sm:w-24"></th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
@@ -27,7 +27,7 @@
                             <div class="text-[13.5px] font-semibold text-slate-900">{{ $account->name }}</div>
                         </div>
                     </td>
-                    <td class="px-5 py-3.5">
+                    <td class="px-2 sm:px-5 py-3.5">
                         <div class="flex items-center gap-1 justify-end lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                             <button wire:click="openEdit({{ $account->id }})"
                                     class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-700 transition-all"

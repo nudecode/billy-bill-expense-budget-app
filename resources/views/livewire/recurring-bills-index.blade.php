@@ -5,7 +5,7 @@
             <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
             <input wire:model.live.debounce.300ms="search" type="text" placeholder="Search…" class="pl-9 pr-4 py-1.5 border border-slate-200 rounded-lg text-[13px] bg-white focus:border-slate-400 focus:ring-2 focus:ring-slate-900/5 outline-none w-52">
         </div>
-        <button wire:click="openCreate"
+        <button wire:click="openCreate()"
                 class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-600 text-white text-[13px] font-semibold rounded-lg hover:bg-green-700 transition-colors">
             <i class="fa-solid fa-plus text-xs"></i> Add Recurring Bill
         </button>
@@ -23,7 +23,7 @@
                         <th class="text-left px-5 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400 hidden md:table-cell">Start Date</th>
                         <th class="text-left px-5 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400 hidden md:table-cell">End Date</th>
                         <th class="text-left px-5 py-3 text-[10.5px] font-bold uppercase tracking-widests text-slate-400 hidden lg:table-cell">Status</th>
-                        <th class="px-5 py-3"></th>
+                        <th class="px-2 sm:px-5 py-3 w-20 sm:w-24"></th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
@@ -63,7 +63,7 @@
                                 <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11.5px] font-semibold bg-emerald-50 text-emerald-600"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0"></span>Active</span>
                             @endif
                         </td>
-                        <td class="px-5 py-3.5">
+                        <td class="px-2 sm:px-5 py-3.5">
                             <div class="flex items-center gap-1 justify-end lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                                 <button wire:click="openEdit({{ $rule->id }})"
                                         class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-700 transition-all"

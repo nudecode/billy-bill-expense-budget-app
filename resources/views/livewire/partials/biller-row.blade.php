@@ -15,7 +15,7 @@
             ${{ number_format($biller->payments_sum_amount ?? 0, 2) }}
         </span>
     </td>
-    <td class="px-5 py-3.5">
+    <td class="px-2 sm:px-5 py-3.5">
         <div class="flex items-center gap-1 justify-end lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
             <button wire:click="openEdit({{ $biller->id }})"
                     class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-700 transition-all"

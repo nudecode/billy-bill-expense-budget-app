@@ -159,7 +159,7 @@ class RecurringBillsIndex extends Component
         $rules = RecurringBill::with(['biller', 'frequency', 'category', 'account'])
             ->where('user_id', auth()->id())
             ->when($this->search, fn ($q) => $q->whereHas('biller', fn ($b) => $b->where('name', 'like', "%{$this->search}%")))
-            ->orderByRaw('end_date IS NULL DESC, end_date DESC, start_date ASC')
+            ->orderByRaw('(end_date IS NULL) DESC, end_date DESC, start_date ASC')
             ->get();
 
         $billers     = Biller::where('user_id', auth()->id())->orderBy('name')->get();
