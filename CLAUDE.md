@@ -128,9 +128,14 @@ Bottom sheet on mobile, centred on `sm+`. `wire:loading` on save button.
 
 ## Workflow
 
-Always branch from `staging`. Before opening a PR:
-1. Run `php artisan test` locally — all tests must pass
-2. Then: `git push -u origin <branch>` → `gh pr create --base staging`
+Always branch from `staging`.
+
+When a feature is complete:
+1. Run `php artisan test` — all tests must pass
+2. Commit and push the branch
+3. **Stop here. Tell Glen the branch is pushed and ready to test locally.**
+4. Wait for Glen to confirm it looks good before running `gh pr create`
+5. Only open the PR after Glen gives the go-ahead
 
 ## What's not built yet (issue queue)
 
