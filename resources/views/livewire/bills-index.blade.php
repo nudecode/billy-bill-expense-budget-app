@@ -196,22 +196,28 @@
                     <div class="text-[11.5px] text-slate-400">{{ $bill->getCategoryName() }} · {{ $bill->getFrequencyName() }}</div>
                 </div>
             </div>
-            <div class="flex items-center gap-3 flex-shrink-0">
+            <div class="flex items-end gap-3 flex-shrink-0">
                 <div class="text-right">
-                    <div class="font-mono text-[15px] font-bold text-slate-900">${{ number_format($bill->getAmount(), 2) }}</div>
+                    <div class="font-mono text-[15px] font-bold text-slate-900 leading-none">${{ number_format($bill->getAmount(), 2) }}</div>
                     @if($bill->isPaid)
-                        <span class="text-[11px] font-semibold text-emerald-600">Paid</span>
+                        <span class="block text-[11px] font-semibold text-emerald-600 mt-1 leading-none">Paid</span>
                     @else
-                        <span class="text-[11px] font-semibold text-red-500">Due</span>
+                        @php $isOverdue = $bill->date->toDateString() < $today; @endphp
+                        <span class="block text-[11px] font-semibold mt-1 leading-none {{ $isOverdue ? 'text-red-500' : 'text-slate-400' }}">{{ $isOverdue ? 'Overdue' : 'Due' }}</span>
                     @endif
                 </div>
                 <div class="flex items-center gap-1 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                     @if(!$bill->isPaid)
-                    <button wire:click="markPaid({{ $bill->rule->id }}, '{{ $bill->date->toDateString() }}')"
-                            class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 transition-all text-sm"
-                            title="Mark Paid">💳</button>
+                    @php $isOverdue = $bill->date->toDateString() < $today; @endphp
+                    <button wire:click="openPayModal({{ $bill->rule->id }}, '{{ $bill->date->toDateString() }}')"
+                            class="w-8 h-8 flex items-center justify-center rounded-lg border transition-all {{ $isOverdue ? 'border-red-200 bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-600' : 'border-slate-200 bg-white text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200' }}"
+                            title="Record Payment">
+                        <i class="fa-solid fa-dollar-sign text-sm"></i>
+                    </button>
                     @endif
-                    <button class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-700 transition-all text-sm">✏️</button>
+                    <button class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-700 transition-all">
+                        <i class="fa-regular fa-pen-to-square text-sm"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -274,18 +280,25 @@
                         <td class="px-5 py-3.5">
                             @if($bill->isPaid)
                                 <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11.5px] font-semibold bg-emerald-50 text-emerald-600"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0"></span>Paid</span>
+                            @elseif($bill->date->toDateString() < $today)
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11.5px] font-semibold bg-red-50 text-red-600"><span class="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0"></span>Overdue</span>
                             @else
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11.5px] font-semibold bg-red-50 text-red-600"><span class="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0"></span>Due</span>
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11.5px] font-semibold bg-slate-100 text-slate-500"><span class="w-1.5 h-1.5 rounded-full bg-slate-400 flex-shrink-0"></span>Due</span>
                             @endif
                         </td>
                         <td class="px-5 py-3.5">
                             <div class="flex items-center gap-1 justify-end lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                                 @if(!$bill->isPaid)
-                                <button wire:click="markPaid({{ $bill->rule->id }}, '{{ $bill->date->toDateString() }}')"
-                                        class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 transition-all text-sm"
-                                        title="Mark Paid">💳</button>
+                                @php $isOverdue = $bill->date->toDateString() < $today; @endphp
+                                <button wire:click="openPayModal({{ $bill->rule->id }}, '{{ $bill->date->toDateString() }}')"
+                                        class="w-8 h-8 flex items-center justify-center rounded-lg border transition-all {{ $isOverdue ? 'border-red-200 bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-600' : 'border-slate-200 bg-white text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200' }}"
+                                        title="Record Payment">
+                                    <i class="fa-solid fa-dollar-sign text-sm"></i>
+                                </button>
                                 @endif
-                                <button class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-700 transition-all text-sm">✏️</button>
+                                <button class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-700 transition-all">
+                                    <i class="fa-regular fa-pen-to-square text-sm"></i>
+                                </button>
                             </div>
                         </td>
                     </tr>
@@ -294,6 +307,92 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
+    </div>
+    @endif
+
+    {{-- ── PAY MODAL ────────────────────────────────────────────────── --}}
+    @if($showPayModal)
+    <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+         x-data="{ open: false }"
+         x-init="$nextTick(() => open = true)"
+         @keydown.escape.window="$wire.closePayModal()">
+
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"
+             x-show="open" x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+             @click="$wire.closePayModal()"></div>
+
+        <div class="relative bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl shadow-xl z-10"
+             x-show="open"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 translate-y-4"
+             x-transition:enter-end="opacity-100 translate-y-0">
+
+            {{-- Header --}}
+            <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
+                        <i class="fa-solid fa-circle-check text-emerald-600 text-sm"></i>
+                    </div>
+                    <h2 class="text-[15px] font-bold text-slate-900">Record Payment</h2>
+                </div>
+                <button wire:click="closePayModal()" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-all">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            {{-- Body --}}
+            <div class="px-5 py-4 space-y-4">
+
+                {{-- Date --}}
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Payment Date</label>
+                    <input wire:model="payDate" type="date"
+                           class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('payDate') border-red-400 @enderror">
+                    @error('payDate') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
+                </div>
+
+                {{-- Amount --}}
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Amount</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-mono text-[13px]">$</span>
+                        <input wire:model="payAmount" type="number" step="0.01" min="0"
+                               class="w-full pl-7 pr-3 py-2 border border-slate-200 rounded-lg font-mono text-[13.5px] focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('payAmount') border-red-400 @enderror">
+                    </div>
+                    @error('payAmount') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
+                </div>
+
+                {{-- Reference number --}}
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Reference / Receipt No. <span class="font-normal normal-case tracking-normal text-slate-300">(optional)</span></label>
+                    <input wire:model="payReference" type="text" placeholder="e.g. ABC123456"
+                           class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('payReference') border-red-400 @enderror">
+                    @error('payReference') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
+                </div>
+
+                {{-- Notes --}}
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Notes <span class="font-normal normal-case tracking-normal text-slate-300">(optional)</span></label>
+                    <textarea wire:model="payNotes" rows="2" placeholder="Any notes about this payment…"
+                              class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] resize-none focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('payNotes') border-red-400 @enderror"></textarea>
+                    @error('payNotes') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
+                </div>
+            </div>
+
+            {{-- Footer --}}
+            <div class="flex items-center justify-end gap-3 px-5 py-4 border-t border-slate-100">
+                <button wire:click="closePayModal()" type="button"
+                        class="px-4 py-2 text-[13px] font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition-all">
+                    Cancel
+                </button>
+                <button wire:click="savePayment()" wire:loading.attr="disabled" wire:target="savePayment"
+                        class="flex items-center gap-2 px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-[13px] font-semibold rounded-lg transition-all disabled:opacity-60">
+                    <span wire:loading.remove wire:target="savePayment"><i class="fa-solid fa-circle-check mr-1"></i>Save Payment</span>
+                    <span wire:loading wire:target="savePayment" class="flex items-center gap-1.5"><i class="fa-solid fa-spinner fa-spin text-xs"></i> Saving…</span>
+                </button>
+            </div>
         </div>
     </div>
     @endif

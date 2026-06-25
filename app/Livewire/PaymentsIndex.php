@@ -30,6 +30,22 @@ class PaymentsIndex extends Component
         if ($this->month === 12) { $this->month = 1; $this->year++; } else { $this->month++; }
     }
 
+    public ?int $viewingPaymentId = null;
+    public bool $showDetailModal = false;
+
+    public function viewPayment(int $id): void
+    {
+        Payment::where('user_id', auth()->id())->findOrFail($id);
+        $this->viewingPaymentId = $id;
+        $this->showDetailModal = true;
+    }
+
+    public function closeDetailModal(): void
+    {
+        $this->showDetailModal = false;
+        $this->viewingPaymentId = null;
+    }
+
     public function render()
     {
         $payments = Payment::with(['biller', 'category', 'account'])
@@ -39,9 +55,13 @@ class PaymentsIndex extends Component
             ->orderBy('payment_date')
             ->get();
 
+        $viewingPayment = $this->viewingPaymentId
+            ? Payment::with(['biller', 'category', 'account'])->find($this->viewingPaymentId)
+            : null;
+
         $total = $payments->sum('amount');
         $periodLabel = Carbon::create($this->year, $this->month, 1)->format('F Y');
 
-        return view('livewire.payments-index', compact('payments', 'total', 'periodLabel'))->layout('layouts.app', ['title' => 'Payments']);
+        return view('livewire.payments-index', compact('payments', 'total', 'periodLabel', 'viewingPayment'))->layout('layouts.app', ['title' => 'Payments']);
     }
 }

@@ -126,6 +126,12 @@ Short version: Livewire boolean `$showModal` controls `@if($showModal)` render.
 Alpine `x-init="$nextTick(() => open = true)"` drives the slide-up animation.
 Bottom sheet on mobile, centred on `sm+`. `wire:loading` on save button.
 
+## Workflow
+
+Always branch from `staging`. Before opening a PR:
+1. Run `php artisan test` locally — all tests must pass
+2. Then: `git push -u origin <branch>` → `gh pr create --base staging`
+
 ## What's not built yet (issue queue)
 
 | Issue | Work |

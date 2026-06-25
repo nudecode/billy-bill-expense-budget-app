@@ -237,9 +237,12 @@
     x-transition:leave="transition ease-in duration-200"
     x-transition:leave-start="opacity-100 translate-y-0"
     x-transition:leave-end="opacity-0 translate-y-2"
-    class="fixed bottom-20 lg:bottom-6 right-4 z-[200] flex items-center gap-2.5 px-4 py-3 bg-gray-900 text-white text-[13px] font-medium rounded-xl shadow-lg pointer-events-none"
+    :class="type === 'success'
+        ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+        : 'bg-red-50 text-red-800 border border-red-200'"
+    class="fixed bottom-20 lg:bottom-6 right-4 z-[200] flex items-center gap-2.5 px-4 py-3 text-[13px] font-medium rounded-xl shadow-lg pointer-events-none"
 >
-    <i :class="type === 'success' ? 'fa-solid fa-circle-check text-emerald-400' : 'fa-solid fa-circle-xmark text-red-400'" class="fa-fw"></i>
+    <i :class="type === 'success' ? 'fa-solid fa-circle-check text-emerald-600' : 'fa-solid fa-circle-xmark text-red-500'" class="fa-fw"></i>
     <span x-text="message"></span>
 </div>
 
