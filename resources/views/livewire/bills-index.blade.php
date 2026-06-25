@@ -12,7 +12,7 @@
                 </button>
             </div>
         </div>
-        <button class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 text-white text-[13px] font-semibold rounded-lg hover:bg-slate-700 transition-colors">
+        <button class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-600 text-white text-[13px] font-semibold rounded-lg hover:bg-green-700 transition-colors">
             + Add Bill
         </button>
     </div>
