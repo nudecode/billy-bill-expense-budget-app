@@ -1,8 +1,10 @@
 <?php
 namespace App\Models;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Payment extends Model {
+    use HasFactory;
     protected $fillable = ['user_id','recurring_bill_id','recurring_bill_date','one_off_bill_id','biller_id','account_id','category_id','amount','payment_date'];
     protected $casts = ['recurring_bill_date'=>'date','payment_date'=>'date','amount'=>'decimal:2'];
     public function user(): BelongsTo { return $this->belongsTo(User::class); }

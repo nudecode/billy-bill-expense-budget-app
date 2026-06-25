@@ -15,10 +15,17 @@ class BillersIndex extends Component
     public function render()
     {
         $billers = Biller::where('user_id', auth()->id())
+            ->withSum('payments', 'amount')
             ->when($this->search, fn ($q) => $q->where('name', 'like', "%{$this->search}%"))
             ->orderBy('name')
             ->get();
 
-        return view('livewire.billers-index', compact('billers'))->layout('layouts.app', ['title' => 'Billers']);
+        // Group by first letter only when not searching (grouping while searching is confusing)
+        $grouped = $this->search
+            ? null
+            : $billers->groupBy(fn ($b) => strtoupper(substr($b->name, 0, 1)));
+
+        return view('livewire.billers-index', compact('billers', 'grouped'))
+            ->layout('layouts.app', ['title' => 'Billers']);
     }
 }
