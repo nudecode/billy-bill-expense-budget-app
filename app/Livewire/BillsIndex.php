@@ -4,9 +4,11 @@ namespace App\Livewire;
 
 use App\Models\OneOffBill;
 use App\Models\Payment;
+use App\Models\RecurringBill;
 use App\Services\RecurringBillService;
 use Carbon\Carbon;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Rule;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -21,6 +23,15 @@ class BillsIndex extends Component
     #[Url] public string $tab = 'all';
     #[Url] public string $search = '';
     #[Url] public string $selectedDate = '';  // Y-m-d, empty = show all
+
+    // ── Pay modal state ───────────────────────────────────────────────────
+    public bool $showPayModal = false;
+    public ?int $payingRuleId = null;
+
+    #[Rule('required|date')] public string $payDate = '';
+    #[Rule('required|numeric|min:0')] public string $payAmount = '';
+    #[Rule('nullable|string|max:100')] public string $payReference = '';
+    #[Rule('nullable|string|max:1000')] public string $payNotes = '';
 
     public function mount(): void
     {
@@ -69,30 +80,56 @@ class BillsIndex extends Component
         $this->month = $date->month;
     }
 
-    public function markPaid(int $ruleId, string $date): void
+    public function openPayModal(int $ruleId, string $date): void
     {
+        $rule = RecurringBill::where('user_id', auth()->id())->findOrFail($ruleId);
+
+        $this->payingRuleId = $ruleId;
+        $this->payDate      = $date;
+        $this->payAmount    = number_format((float) $rule->amount, 2, '.', '');
+        $this->payReference = '';
+        $this->payNotes     = '';
+        $this->resetValidation();
+        $this->showPayModal = true;
+    }
+
+    public function closePayModal(): void
+    {
+        $this->showPayModal = false;
+        $this->payingRuleId = null;
+        $this->resetValidation();
+    }
+
+    public function savePayment(): void
+    {
+        $this->validate();
+
         $user = auth()->user();
-        $rule = \App\Models\RecurringBill::findOrFail($ruleId);
+        $rule = RecurringBill::where('user_id', $user->id)->findOrFail($this->payingRuleId);
 
         $alreadyPaid = Payment::where('user_id', $user->id)
-            ->where('recurring_bill_id', $ruleId)
-            ->where('recurring_bill_date', $date)
+            ->where('recurring_bill_id', $rule->id)
+            ->where('recurring_bill_date', $this->payDate)
             ->exists();
 
         if (!$alreadyPaid) {
             Payment::create([
                 'user_id'             => $user->id,
-                'recurring_bill_id'   => $ruleId,
-                'recurring_bill_date' => $date,
+                'recurring_bill_id'   => $rule->id,
+                'recurring_bill_date' => $this->payDate,
                 'biller_id'           => $rule->biller_id,
                 'account_id'          => $rule->account_id,
                 'category_id'         => $rule->category_id,
-                'amount'              => $rule->amount,
-                'payment_date'        => today()->toDateString(),
+                'amount'              => $this->payAmount,
+                'payment_date'        => $this->payDate,
+                'reference_number'    => $this->payReference ?: null,
+                'notes'               => $this->payNotes ?: null,
             ]);
         }
 
         app(RecurringBillService::class)->clearCache($user->id, $this->year, $this->month);
+        $this->closePayModal();
+        $this->dispatch('toast', message: 'Payment recorded.', type: 'success');
     }
 
     public function render()
