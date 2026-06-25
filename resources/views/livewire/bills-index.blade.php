@@ -196,21 +196,23 @@
                     <div class="text-[11.5px] text-slate-400">{{ $bill->getCategoryName() }} · {{ $bill->getFrequencyName() }}</div>
                 </div>
             </div>
-            <div class="flex items-center gap-3 flex-shrink-0">
+            <div class="flex items-end gap-3 flex-shrink-0">
                 <div class="text-right">
-                    <div class="font-mono text-[15px] font-bold text-slate-900">${{ number_format($bill->getAmount(), 2) }}</div>
+                    <div class="font-mono text-[15px] font-bold text-slate-900 leading-none">${{ number_format($bill->getAmount(), 2) }}</div>
                     @if($bill->isPaid)
-                        <span class="text-[11px] font-semibold text-emerald-600">Paid</span>
+                        <span class="block text-[11px] font-semibold text-emerald-600 mt-1 leading-none">Paid</span>
                     @else
-                        <span class="text-[11px] font-semibold text-red-500">Due</span>
+                        @php $isOverdue = $bill->date->toDateString() < $today; @endphp
+                        <span class="block text-[11px] font-semibold mt-1 leading-none {{ $isOverdue ? 'text-red-500' : 'text-slate-400' }}">{{ $isOverdue ? 'Overdue' : 'Due' }}</span>
                     @endif
                 </div>
                 <div class="flex items-center gap-1 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                     @if(!$bill->isPaid)
+                    @php $isOverdue = $bill->date->toDateString() < $today; @endphp
                     <button wire:click="openPayModal({{ $bill->rule->id }}, '{{ $bill->date->toDateString() }}')"
-                            class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 transition-all"
+                            class="w-8 h-8 flex items-center justify-center rounded-lg border transition-all {{ $isOverdue ? 'border-red-200 bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-600' : 'border-slate-200 bg-white text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200' }}"
                             title="Record Payment">
-                        <i class="fa-solid fa-circle-check text-sm"></i>
+                        <i class="fa-solid fa-dollar-sign text-sm"></i>
                     </button>
                     @endif
                     <button class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-700 transition-all">
@@ -278,17 +280,20 @@
                         <td class="px-5 py-3.5">
                             @if($bill->isPaid)
                                 <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11.5px] font-semibold bg-emerald-50 text-emerald-600"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0"></span>Paid</span>
+                            @elseif($bill->date->toDateString() < $today)
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11.5px] font-semibold bg-red-50 text-red-600"><span class="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0"></span>Overdue</span>
                             @else
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11.5px] font-semibold bg-red-50 text-red-600"><span class="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0"></span>Due</span>
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11.5px] font-semibold bg-slate-100 text-slate-500"><span class="w-1.5 h-1.5 rounded-full bg-slate-400 flex-shrink-0"></span>Due</span>
                             @endif
                         </td>
                         <td class="px-5 py-3.5">
                             <div class="flex items-center gap-1 justify-end lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                                 @if(!$bill->isPaid)
+                                @php $isOverdue = $bill->date->toDateString() < $today; @endphp
                                 <button wire:click="openPayModal({{ $bill->rule->id }}, '{{ $bill->date->toDateString() }}')"
-                                        class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 transition-all"
+                                        class="w-8 h-8 flex items-center justify-center rounded-lg border transition-all {{ $isOverdue ? 'border-red-200 bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-600' : 'border-slate-200 bg-white text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200' }}"
                                         title="Record Payment">
-                                    <i class="fa-solid fa-circle-check text-sm"></i>
+                                    <i class="fa-solid fa-dollar-sign text-sm"></i>
                                 </button>
                                 @endif
                                 <button class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-700 transition-all">
