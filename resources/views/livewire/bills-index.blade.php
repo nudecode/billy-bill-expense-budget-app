@@ -35,34 +35,34 @@
     </div>
 
     {{-- ── SUMMARY CARDS ───────────────────────────────────────────── --}}
-    <div class="grid grid-cols-3 gap-4 mb-5">
-        <div class="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm relative overflow-hidden">
+    <div class="grid grid-cols-3 gap-2 sm:gap-4 mb-5">
+        <div class="bg-white border border-gray-200 rounded-2xl p-3 sm:p-4 shadow-sm relative overflow-hidden">
             <div class="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-t-2xl"></div>
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 flex-shrink-0"><i class="fa-regular fa-circle-check"></i></div>
-                <div>
-                    <div class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Paid</div>
-                    <div class="font-mono text-[13px] sm:text-[17px] font-bold text-emerald-600">${{ number_format($paidTotal, 2) }}</div>
+            <div class="flex items-center gap-2 sm:gap-3">
+                <div class="hidden sm:flex w-8 h-8 rounded-lg bg-emerald-50 items-center justify-center text-emerald-600 flex-shrink-0"><i class="fa-regular fa-circle-check"></i></div>
+                <div class="min-w-0">
+                    <div class="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-gray-400">Paid</div>
+                    <div class="font-mono text-[12px] sm:text-[17px] font-bold text-emerald-600 truncate">${{ number_format($paidTotal, 2) }}</div>
                 </div>
             </div>
         </div>
-        <div class="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm relative overflow-hidden">
+        <div class="bg-white border border-gray-200 rounded-2xl p-3 sm:p-4 shadow-sm relative overflow-hidden">
             <div class="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-red-500 to-red-400 rounded-t-2xl"></div>
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center text-red-500 flex-shrink-0"><i class="fa-regular fa-clock"></i></div>
-                <div>
-                    <div class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Unpaid</div>
-                    <div class="font-mono text-[13px] sm:text-[17px] font-bold text-red-600">${{ number_format($unpaidTotal, 2) }}</div>
+            <div class="flex items-center gap-2 sm:gap-3">
+                <div class="hidden sm:flex w-8 h-8 rounded-lg bg-red-50 items-center justify-center text-red-500 flex-shrink-0"><i class="fa-regular fa-clock"></i></div>
+                <div class="min-w-0">
+                    <div class="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-gray-400">Unpaid</div>
+                    <div class="font-mono text-[12px] sm:text-[17px] font-bold text-red-600 truncate">${{ number_format($unpaidTotal, 2) }}</div>
                 </div>
             </div>
         </div>
-        <div class="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm relative overflow-hidden">
+        <div class="bg-white border border-gray-200 rounded-2xl p-3 sm:p-4 shadow-sm relative overflow-hidden">
             <div class="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-amber-500 to-amber-400 rounded-t-2xl"></div>
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-500 flex-shrink-0"><i class="fa-regular fa-file-lines"></i></div>
-                <div>
-                    <div class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Total</div>
-                    <div class="font-mono text-[13px] sm:text-[17px] font-bold text-gray-900">${{ number_format($paidTotal + $unpaidTotal, 2) }}</div>
+            <div class="flex items-center gap-2 sm:gap-3">
+                <div class="hidden sm:flex w-8 h-8 rounded-lg bg-amber-50 items-center justify-center text-amber-500 flex-shrink-0"><i class="fa-regular fa-file-lines"></i></div>
+                <div class="min-w-0">
+                    <div class="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-gray-400">Total</div>
+                    <div class="font-mono text-[12px] sm:text-[17px] font-bold text-gray-900 truncate">${{ number_format($paidTotal + $unpaidTotal, 2) }}</div>
                 </div>
             </div>
         </div>
