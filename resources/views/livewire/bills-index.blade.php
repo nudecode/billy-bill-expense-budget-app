@@ -17,6 +17,46 @@
         </button>
     </div>
 
+    {{-- Summary cards --}}
+    <div class="grid grid-cols-3 gap-4 mb-6">
+        <div class="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm relative overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-t-2xl"></div>
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 flex-shrink-0">
+                    <i class="fa-regular fa-circle-check"></i>
+                </div>
+                <div>
+                    <div class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Paid</div>
+                    <div class="font-mono text-[17px] font-bold text-emerald-600">${{ number_format($paidTotal, 2) }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm relative overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-red-500 to-red-400 rounded-t-2xl"></div>
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center text-red-500 flex-shrink-0">
+                    <i class="fa-regular fa-clock"></i>
+                </div>
+                <div>
+                    <div class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Unpaid</div>
+                    <div class="font-mono text-[17px] font-bold text-red-600">${{ number_format($unpaidTotal, 2) }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm relative overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-amber-500 to-amber-400 rounded-t-2xl"></div>
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-500 flex-shrink-0">
+                    <i class="fa-regular fa-file-lines"></i>
+                </div>
+                <div>
+                    <div class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Total</div>
+                    <div class="font-mono text-[17px] font-bold text-gray-900">${{ number_format($paidTotal + $unpaidTotal, 2) }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- Tabs --}}
     <div class="flex gap-1 p-1 bg-slate-100 rounded-xl w-fit mb-5">
         <button wire:click="$set('tab','all')" class="px-4 py-1.5 rounded-lg text-[13px] font-semibold transition-all {{ $tab === 'all' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900' }}">All</button>
@@ -98,12 +138,6 @@
                     @endforelse
                 </tbody>
             </table>
-        </div>
-        {{-- Footer totals --}}
-        <div class="px-5 py-3 bg-slate-50 border-t-2 border-slate-200 flex justify-end gap-7">
-            <div class="text-right"><div class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Paid</div><div class="font-mono text-[14px] font-semibold text-emerald-600">${{ number_format($paidTotal, 2) }}</div></div>
-            <div class="text-right"><div class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Unpaid</div><div class="font-mono text-[14px] font-semibold text-red-600">${{ number_format($unpaidTotal, 2) }}</div></div>
-            <div class="text-right"><div class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Total</div><div class="font-mono text-[14px] font-semibold text-slate-900">${{ number_format($paidTotal + $unpaidTotal, 2) }}</div></div>
         </div>
     </div>
 </div>

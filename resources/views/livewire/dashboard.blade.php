@@ -25,7 +25,7 @@
         <a href="{{ route('bills') }}" class="group bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 relative overflow-hidden">
             <div class="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-amber-500 to-amber-400 rounded-t-2xl"></div>
             <div class="flex items-center justify-between mb-3">
-                <div class="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center text-lg">🧾</div>
+                <div class="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center text-amber-500"><i class="fa-regular fa-file-lines text-base"></i></div>
                 <span class="font-mono text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">{{ $paidCount + $unpaidCount }} bills</span>
             </div>
             <div class="text-[10.5px] font-bold uppercase tracking-widest text-slate-400 mb-1">Total Bills</div>
@@ -40,7 +40,7 @@
         <a href="{{ route('income') }}" class="group bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 relative overflow-hidden">
             <div class="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-blue-600 to-blue-400 rounded-t-2xl"></div>
             <div class="flex items-center justify-between mb-3">
-                <div class="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center text-lg">💵</div>
+                <div class="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500"><i class="fa-regular fa-money-bill-1 text-base"></i></div>
                 <span class="font-mono text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">income</span>
             </div>
             <div class="text-[10.5px] font-bold uppercase tracking-widest text-slate-400 mb-1">Total Income</div>
@@ -55,7 +55,7 @@
         <a href="{{ route('payments') }}" class="group bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 relative overflow-hidden">
             <div class="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-t-2xl"></div>
             <div class="flex items-center justify-between mb-3">
-                <div class="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center text-lg">✅</div>
+                <div class="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600"><i class="fa-regular fa-circle-check text-base"></i></div>
                 <span class="font-mono text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">{{ $paidCount }} of {{ $paidCount + $unpaidCount }}</span>
             </div>
             <div class="text-[10.5px] font-bold uppercase tracking-widest text-slate-400 mb-1">Bills Paid</div>
@@ -70,7 +70,7 @@
         <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm relative overflow-hidden">
             <div class="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-red-600 to-red-400 rounded-t-2xl"></div>
             <div class="flex items-center justify-between mb-3">
-                <div class="w-9 h-9 rounded-xl bg-red-50 flex items-center justify-center text-lg">⏰</div>
+                <div class="w-9 h-9 rounded-xl bg-red-50 flex items-center justify-center text-red-500"><i class="fa-regular fa-clock text-base"></i></div>
                 <span class="font-mono text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">{{ $unpaidCount }} bills</span>
             </div>
             <div class="text-[10.5px] font-bold uppercase tracking-widest text-slate-400 mb-1">Unpaid Bills</div>
@@ -85,7 +85,7 @@
         <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm relative overflow-hidden">
             <div class="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-violet-600 to-violet-400 rounded-t-2xl"></div>
             <div class="flex items-center justify-between mb-3">
-                <div class="w-9 h-9 rounded-xl bg-violet-50 flex items-center justify-center text-lg">📊</div>
+                <div class="w-9 h-9 rounded-xl bg-violet-50 flex items-center justify-center text-violet-500"><i class="fa-regular fa-chart-bar text-base"></i></div>
             </div>
             <div class="text-[10.5px] font-bold uppercase tracking-widest text-slate-400 mb-1">Net This Month</div>
             <div class="font-mono text-[20px] font-bold tracking-tight {{ $netAmount >= 0 ? 'text-emerald-600' : 'text-red-600' }}">
@@ -98,7 +98,7 @@
         <a href="{{ route('billers') }}" class="group bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 relative overflow-hidden">
             <div class="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-teal-600 to-teal-400 rounded-t-2xl"></div>
             <div class="flex items-center justify-between mb-3">
-                <div class="w-9 h-9 rounded-xl bg-teal-50 flex items-center justify-center text-lg">🏢</div>
+                <div class="w-9 h-9 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600"><i class="fa-regular fa-building text-base"></i></div>
                 <span class="font-mono text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">total</span>
             </div>
             <div class="text-[10.5px] font-bold uppercase tracking-widest text-slate-400 mb-1">Billers</div>

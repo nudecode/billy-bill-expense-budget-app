@@ -13,6 +13,22 @@
             + Add Income
         </button>
     </div>
+    {{-- Summary card --}}
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm relative overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-blue-500 to-blue-400 rounded-t-2xl"></div>
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500 flex-shrink-0">
+                    <i class="fa-regular fa-money-bill-1"></i>
+                </div>
+                <div>
+                    <div class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Total Income</div>
+                    <div class="font-mono text-[17px] font-bold text-blue-600">+${{ number_format($total, 2) }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full">
@@ -73,9 +89,6 @@
                     @endif
                 </tbody>
             </table>
-        </div>
-        <div class="px-5 py-3 bg-slate-50 border-t-2 border-slate-200 flex justify-end">
-            <div class="text-right"><div class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Total Income</div><div class="font-mono text-[14px] font-semibold text-blue-600">+${{ number_format($total, 2) }}</div></div>
         </div>
     </div>
 </div>
