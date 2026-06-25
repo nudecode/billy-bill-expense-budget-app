@@ -20,8 +20,8 @@
                         <th class="text-left px-5 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400">Name</th>
                         <th class="text-left px-5 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400 hidden sm:table-cell">Email</th>
                         <th class="text-left px-5 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400 hidden md:table-cell">Phone</th>
-                        <th class="text-right px-5 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400">Total Paid</th>
-                        <th class="px-5 py-3"></th>
+                        <th class="text-right px-3 sm:px-5 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400">Total Paid</th>
+                        <th class="pl-2 pr-4 sm:px-5 py-3 w-24"></th>
                     </tr>
                 </thead>
                 <tbody>
