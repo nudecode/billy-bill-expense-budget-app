@@ -217,7 +217,7 @@
         </div>
         @empty
         <div class="px-5 py-10 text-center">
-            <div class="text-2xl mb-2">📅</div>
+            <i class="fa-regular fa-calendar-days text-3xl text-slate-300 mb-3"></i>
             <div class="text-[14px] font-semibold text-slate-600">No bills on this day</div>
             <div class="text-[13px] text-slate-400 mt-1">Tap + Add Bill to schedule one.</div>
         </div>
