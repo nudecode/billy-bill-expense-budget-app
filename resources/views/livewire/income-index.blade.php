@@ -59,7 +59,7 @@
                         <td class="px-5 py-3.5 font-mono text-[12.5px] text-slate-700">{{ $income->date->format('d M Y') }}</td>
                         <td class="px-5 py-3.5 font-mono text-[13px] font-medium text-blue-600">+${{ number_format($income->getAmount(), 2) }}</td>
                         <td class="px-5 py-3.5">
-                            <div class="flex items-center gap-1 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div class="flex items-center gap-1 justify-end lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                                 <button class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-700 transition-all text-sm">✏️</button>
                             </div>
                         </td>
@@ -81,7 +81,7 @@
                         <td class="px-5 py-3.5 text-[13px] text-slate-500 hidden sm:table-cell">{{ $income->account->name }}</td>
                         <td class="px-5 py-3.5 font-mono text-[12.5px] text-slate-700">{{ $income->income_date->format('d M Y') }}</td>
                         <td class="px-5 py-3.5 font-mono text-[13px] font-medium text-blue-600">+${{ number_format($income->amount, 2) }}</td>
-                        <td class="px-5 py-3.5"><div class="flex items-center gap-1 justify-end opacity-0 group-hover:opacity-100 transition-opacity"><button class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-700 transition-all text-sm">✏️</button></div></td>
+                        <td class="px-5 py-3.5"><div class="flex items-center gap-1 justify-end lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"><button class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-700 transition-all text-sm">✏️</button></div></td>
                     </tr>
                     @endforeach
                     @if(count($instances) === 0 && $oneOff->isEmpty())

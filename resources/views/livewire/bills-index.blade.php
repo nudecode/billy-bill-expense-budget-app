@@ -205,7 +205,7 @@
                         <span class="text-[11px] font-semibold text-red-500">Due</span>
                     @endif
                 </div>
-                <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div class="flex items-center gap-1 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                     @if(!$bill->isPaid)
                     <button wire:click="markPaid({{ $bill->rule->id }}, '{{ $bill->date->toDateString() }}')"
                             class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 transition-all text-sm"
@@ -279,7 +279,7 @@
                             @endif
                         </td>
                         <td class="px-5 py-3.5">
-                            <div class="flex items-center gap-1 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div class="flex items-center gap-1 justify-end lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                                 @if(!$bill->isPaid)
                                 <button wire:click="markPaid({{ $bill->rule->id }}, '{{ $bill->date->toDateString() }}')"
                                         class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 transition-all text-sm"

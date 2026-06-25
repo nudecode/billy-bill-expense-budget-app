@@ -43,7 +43,7 @@
                         <td class="px-5 py-3.5 font-mono text-[12.5px] text-slate-500 hidden md:table-cell">{{ $rule->start_date->format('d M Y') }}</td>
                         <td class="px-5 py-3.5 font-mono text-[12.5px] text-slate-400 hidden md:table-cell">{{ $rule->end_date->format('d M Y') }}</td>
                         <td class="px-5 py-3.5">
-                            <div class="flex items-center gap-1 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div class="flex items-center gap-1 justify-end lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                                 <button class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-700 transition-all text-sm">✏️</button>
                                 <button class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all text-sm">🗑</button>
                             </div>

@@ -19,7 +19,7 @@
                             <div class="text-[13.5px] font-semibold text-slate-900">{{ $account->name }}</div>
                         </div>
                     </td>
-                    <td class="px-5 py-3.5"><div class="flex items-center gap-1 justify-end opacity-0 group-hover:opacity-100 transition-opacity"><button class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-700 transition-all text-sm">✏️</button><button class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all text-sm">🗑</button></div></td>
+                    <td class="px-5 py-3.5"><div class="flex items-center gap-1 justify-end lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"><button class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-700 transition-all text-sm">✏️</button><button class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all text-sm">🗑</button></div></td>
                 </tr>
                 @empty
                 <tr><td colspan="2" class="px-5 py-10 text-center text-slate-400 text-[13px]">No accounts yet.</td></tr>
