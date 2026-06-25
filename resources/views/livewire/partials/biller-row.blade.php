@@ -17,8 +17,16 @@
     </td>
     <td class="px-5 py-3.5">
         <div class="flex items-center gap-1 justify-end lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
-            <button class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-700 transition-all text-sm">✏️</button>
-            <button class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all text-sm">🗑</button>
+            <button wire:click="openEdit({{ $biller->id }})"
+                    class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-700 transition-all"
+                    title="Edit">
+                <i class="fa-regular fa-pen-to-square text-sm"></i>
+            </button>
+            <button wire:click="confirmDelete({{ $biller->id }})"
+                    class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all"
+                    title="Delete">
+                <i class="fa-regular fa-trash-can text-sm"></i>
+            </button>
         </div>
     </td>
 </tr>

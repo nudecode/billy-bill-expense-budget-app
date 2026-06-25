@@ -220,6 +220,29 @@
 
 </nav>
 
+{{-- ═══ GLOBAL TOAST NOTIFICATION ═══ --}}
+<div
+    x-data="{ show: false, message: '', type: 'success' }"
+    x-cloak
+    @toast.window="
+        message = $event.detail.message;
+        type = $event.detail.type ?? 'success';
+        show = true;
+        setTimeout(() => show = false, 3500);
+    "
+    x-show="show"
+    x-transition:enter="transition ease-out duration-300"
+    x-transition:enter-start="opacity-0 translate-y-2"
+    x-transition:enter-end="opacity-100 translate-y-0"
+    x-transition:leave="transition ease-in duration-200"
+    x-transition:leave-start="opacity-100 translate-y-0"
+    x-transition:leave-end="opacity-0 translate-y-2"
+    class="fixed bottom-20 lg:bottom-6 right-4 z-[200] flex items-center gap-2.5 px-4 py-3 bg-gray-900 text-white text-[13px] font-medium rounded-xl shadow-lg pointer-events-none"
+>
+    <i :class="type === 'success' ? 'fa-solid fa-circle-check text-emerald-400' : 'fa-solid fa-circle-xmark text-red-400'" class="fa-fw"></i>
+    <span x-text="message"></span>
+</div>
+
 @livewireScripts
 
 <script>

@@ -109,9 +109,44 @@ Financial figures always use the `font-mono` class (JetBrains Mono).
 | Models | `app/Models/` |
 | Seeders (real data) | `database/seeders/DemoUserSeeder.php` |
 
-## What's not built yet
+## What's built (as of Jun 25 2026)
 
-- CRUD forms (Add/Edit/Delete) for all sections — buttons exist in the UI but are not wired up
-- Confirmation modal when changing a recurring bill/income end date (should warn that future instances will be recalculated)
-- One-off bill/income entry
-- Mark recurring income as received
+- Full UI: green theme, collapsible sidebar (Option A: 256px → 64px icons), mobile bottom nav
+- Calendar bills view: week strip (default) + month grid, day filtering, circle colour coding
+- Biller totals with A-Z collapsible groups
+- CRUD: Billers (full create/edit/delete) — in PR #20
+- CRUD: Accounts (full create/edit/delete) — in PR #20
+- Global toast notification (dispatch 'toast' event from any Livewire component)
+- Font Awesome 6 Free via CDN
+
+## CRUD modal pattern (copy this for every new form)
+
+See `.claude/projects/.../memory/session-state.md` for the complete template.
+Short version: Livewire boolean `$showModal` controls `@if($showModal)` render.
+Alpine `x-init="$nextTick(() => open = true)"` drives the slide-up animation.
+Bottom sheet on mobile, centred on `sm+`. `wire:loading` on save button.
+
+## What's not built yet (issue queue)
+
+| Issue | Work |
+|---|---|
+| #13 | Payment flow: receipt number, notes, detailed pay modal |
+| #15 | CRUD: Recurring Bills (with end-date cascade logic) |
+| #16 | CRUD: Recurring Income |
+| #17 | CRUD: One-off bills + income (smart autocomplete suggestions) |
+| #18 | Edit/delete individual bill instances (design question needed) |
+| #7  | User-managed categories (schema decision: add user_id to categories) |
+| #11 | Desktop full calendar view (bills in day cells) |
+| #12 | Summary cards reflect day/week view context |
+
+## Critical traps
+
+**Never re-add Alpine to app.js.** Livewire 4 owns Alpine. These 3 lines in resources/js/app.js break all wire:click silently:
+```js
+import Alpine from 'alpinejs'; window.Alpine = Alpine; Alpine.start();
+```
+
+**Never use named functions in @php blocks.** PHP can't redeclare them across test runs.
+Use closure variables: `$fn = function() {}` not `function fn() {}`
+
+**Never cache BillInstance/IncomeInstance DTOs.** Eloquent models with loaded relationships don't serialize cleanly. Cache::remember will cause "incomplete object" errors on next request.
