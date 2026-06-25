@@ -90,8 +90,10 @@ class BillersIndexTest extends TestCase
 
         $response = $this->actingAs($this->user)->get('/billers');
 
-        // Letter group headers present
-        $response->assertSee('biller-A', false);
-        $response->assertSee('biller-N', false);
+        // Letter group headers rendered with Alpine collapse binding
+        $response->assertSee("open['A']", false);
+        $response->assertSee("open['N']", false);
+        // Count badges present
+        $response->assertSee('(1)');
     }
 }

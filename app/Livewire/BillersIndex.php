@@ -25,9 +25,7 @@ class BillersIndex extends Component
             ? null
             : $billers->groupBy(fn ($b) => strtoupper(substr($b->name, 0, 1)));
 
-        $presentLetters = $grouped ? $grouped->keys()->all() : [];
-
-        return view('livewire.billers-index', compact('billers', 'grouped', 'presentLetters'))
+        return view('livewire.billers-index', compact('billers', 'grouped'))
             ->layout('layouts.app', ['title' => 'Billers']);
     }
 }
