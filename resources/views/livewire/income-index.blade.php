@@ -60,8 +60,9 @@
                         <td class="px-5 py-3.5 font-mono text-[13px] font-medium text-blue-600">+${{ number_format($income->getAmount(), 2) }}</td>
                         <td class="px-2 sm:px-5 py-3.5">
                             <div class="flex items-center gap-1 justify-end lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
-                                <button disabled title="Editing individual occurrences is coming soon"
-                                        class="hidden sm:flex w-8 h-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-300 cursor-not-allowed">
+                                <button wire:click="openEditOccurrence({{ $income->rule->id }}, '{{ $income->date->toDateString() }}')"
+                                        class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-700 transition-all"
+                                        title="Edit">
                                     <i class="fa-regular fa-pen-to-square text-sm"></i>
                                 </button>
                             </div>
@@ -101,4 +102,139 @@
             </table>
         </div>
     </div>
+
+    {{-- ── EDIT OCCURRENCE MODAL ───────────────────────────────────────── --}}
+    @if($showEditModal)
+    <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+         x-data="{ open: false }"
+         x-init="$nextTick(() => open = true)"
+         @keydown.escape.window="$wire.closeEditModal()">
+
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"
+             x-show="open" x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+             @click="$wire.closeEditModal()"></div>
+
+        <div class="relative bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl shadow-xl z-10"
+             x-show="open"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 translate-y-4"
+             x-transition:enter-end="opacity-100 translate-y-0">
+
+            {{-- Header --}}
+            <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center">
+                        <i class="fa-regular fa-pen-to-square text-slate-500 text-sm"></i>
+                    </div>
+                    <h2 class="text-[15px] font-bold text-slate-900">Edit Income — {{ \Carbon\Carbon::parse($editingDate)->format('d M Y') }}</h2>
+                </div>
+                <button wire:click="closeEditModal()" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-all">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            {{-- Body --}}
+            <div class="px-5 py-4 space-y-4">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Amount</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-mono text-[13px]">$</span>
+                            <input wire:model="editAmount" type="number" step="0.01" min="0.01"
+                                   class="w-full pl-7 pr-3 py-2 border border-slate-200 rounded-lg font-mono text-[13.5px] focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('editAmount') border-red-400 @enderror">
+                        </div>
+                        @error('editAmount') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Account</label>
+                        <select wire:model="editAccountId"
+                                class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] bg-white focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('editAccountId') border-red-400 @enderror">
+                            @foreach($accounts as $account)
+                                <option value="{{ $account->id }}">{{ $account->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('editAccountId') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
+                <button wire:click="switchToDeleteOccurrence()" type="button"
+                        class="text-[12.5px] text-red-500 hover:text-red-600 font-semibold transition-colors">
+                    <i class="fa-regular fa-trash-can mr-1"></i>Remove this income instead
+                </button>
+            </div>
+
+            {{-- Footer — apply-to choice --}}
+            <div class="px-5 py-4 border-t border-slate-100 space-y-2">
+                <p class="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1">Apply changes to</p>
+                <button wire:click="saveEditOccurrence('this')" wire:loading.attr="disabled" wire:target="saveEditOccurrence"
+                        class="w-full flex items-center justify-between px-4 py-2.5 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-all disabled:opacity-60">
+                    <span class="text-[13px] font-semibold text-slate-800">This occurrence only</span>
+                    <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i>
+                </button>
+                <button wire:click="saveEditOccurrence('future')" wire:loading.attr="disabled" wire:target="saveEditOccurrence"
+                        class="w-full flex items-center justify-between px-4 py-2.5 bg-green-600 hover:bg-green-700 rounded-lg transition-all disabled:opacity-60">
+                    <span class="text-[13px] font-semibold text-white">This and all future occurrences</span>
+                    <i class="fa-solid fa-chevron-right text-white/70 text-xs"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- ── DELETE OCCURRENCE MODAL ─────────────────────────────────────── --}}
+    @if($showDeleteOccurrenceModal)
+    <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+         x-data="{ open: false }"
+         x-init="$nextTick(() => open = true)"
+         @keydown.escape.window="$wire.cancelDeleteOccurrence()">
+
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"
+             x-show="open" x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+             @click="$wire.cancelDeleteOccurrence()"></div>
+
+        <div class="relative bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl shadow-xl z-10"
+             x-show="open"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 translate-y-4"
+             x-transition:enter-end="opacity-100 translate-y-0">
+
+            <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center">
+                        <i class="fa-regular fa-trash-can text-red-500 text-sm"></i>
+                    </div>
+                    <h2 class="text-[15px] font-bold text-slate-900">Remove Income</h2>
+                </div>
+                <button wire:click="cancelDeleteOccurrence()" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 transition-all">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="px-5 py-4 space-y-2">
+                <p class="text-[13.5px] text-slate-600 leading-relaxed mb-2">
+                    Removing just this occurrence leaves the recurring income and every other month untouched.
+                    Removing this and all future occurrences ends the recurring income from this date onward.
+                </p>
+                <button wire:click="deleteOccurrenceThisOnly()" wire:loading.attr="disabled" wire:target="deleteOccurrenceThisOnly"
+                        class="w-full flex items-center justify-between px-4 py-2.5 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-all disabled:opacity-60">
+                    <span class="text-[13px] font-semibold text-slate-800">This occurrence only</span>
+                    <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i>
+                </button>
+                <button wire:click="deleteOccurrenceAllFuture()" wire:loading.attr="disabled" wire:target="deleteOccurrenceAllFuture"
+                        class="w-full flex items-center justify-between px-4 py-2.5 bg-red-600 hover:bg-red-700 rounded-lg transition-all disabled:opacity-60">
+                    <span class="text-[13px] font-semibold text-white">This and all future occurrences</span>
+                    <i class="fa-solid fa-chevron-right text-white/70 text-xs"></i>
+                </button>
+            </div>
+
+            <div class="px-5 py-4 border-t border-slate-100">
+                <button wire:click="cancelDeleteOccurrence()" class="w-full px-4 py-2.5 text-[13px] font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+    @endif
 </div>
