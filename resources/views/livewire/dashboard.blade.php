@@ -67,7 +67,7 @@
         </a>
 
         {{-- Unpaid --}}
-        <a href="{{ route('bills', ['tab' => 'unpaid', 'selectedDate' => '', 'y' => $year, 'm' => $month]) }}" class="group bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 relative overflow-hidden">
+        <a href="{{ route('bills', ['tab' => 'unpaid', 'selectedDate' => '', 'calView' => 'month', 'y' => $year, 'm' => $month]) }}" class="group bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 relative overflow-hidden">
             <div class="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-red-600 to-red-400 rounded-t-2xl"></div>
             <div class="flex items-center justify-between mb-3">
                 <div class="w-9 h-9 rounded-xl bg-red-50 flex items-center justify-center text-red-500"><i class="fa-regular fa-clock text-base"></i></div>
