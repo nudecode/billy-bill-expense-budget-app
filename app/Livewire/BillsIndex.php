@@ -142,7 +142,7 @@ class BillsIndex extends Component
     {
         $this->year ??= now()->year;
         $this->month ??= now()->month;
-        if (! $this->selectedDate) {
+        if (! $this->selectedDate && ! request()->has('selectedDate')) {
             $this->selectedDate = now()->toDateString();
         }
     }
@@ -797,6 +797,11 @@ class BillsIndex extends Component
             );
         } else {
             // Apply tab and search only when not filtered to a single day
+            if ($this->calView === 'week') {
+                $listInstances = $listInstances->filter(
+                    fn ($b) => $weekDays->contains($b->date->toDateString())
+                );
+            }
             if ($this->search) {
                 $s = strtolower($this->search);
                 $listInstances = $listInstances->filter(
@@ -820,6 +825,11 @@ class BillsIndex extends Component
                 fn ($b) => $b->due_date->toDateString() === $this->selectedDate
             );
         } else {
+            if ($this->calView === 'week') {
+                $listOneOffBills = $listOneOffBills->filter(
+                    fn ($b) => $weekDays->contains($b->due_date->toDateString())
+                );
+            }
             if ($this->search) {
                 $s = strtolower($this->search);
                 $listOneOffBills = $listOneOffBills->filter(
