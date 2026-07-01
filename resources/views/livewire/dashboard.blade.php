@@ -120,7 +120,7 @@
                     <tr class="bg-slate-50 border-b border-slate-200">
                         <th class="text-left px-5 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400">Biller</th>
                         <th class="text-left px-5 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400 hidden sm:table-cell">Category</th>
-                        <th class="text-left px-5 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400">Due</th>
+                        <th class="text-left px-5 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400 hidden sm:table-cell">Due</th>
                         <th class="text-left px-5 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400">Amount</th>
                         <th class="text-left px-5 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400">Status</th>
                     </tr>
@@ -136,14 +136,14 @@
                                 </div>
                                 <div>
                                     <div class="text-[13.5px] font-semibold text-slate-900">{{ $bill->getBillerName() }}</div>
-                                    <div class="text-[11.5px] text-slate-400 hidden sm:block">{{ $bill->getFrequencyName() }}</div>
+                                    <div class="text-[11.5px] text-slate-400">{{ $bill->date->format('d M Y') }} · {{ $bill->getFrequencyName() }}</div>
                                 </div>
                             </div>
                         </td>
                         <td class="px-5 py-3.5 hidden sm:table-cell">
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11.5px] font-medium bg-slate-100 text-slate-600 border border-slate-200">{{ $bill->getCategoryName() }}</span>
                         </td>
-                        <td class="px-5 py-3.5 font-mono text-[12.5px] text-slate-700">{{ $bill->date->format('d M Y') }}</td>
+                        <td class="px-5 py-3.5 font-mono text-[12.5px] text-slate-700 hidden sm:table-cell">{{ $bill->date->format('d M Y') }}</td>
                         <td class="px-5 py-3.5 font-mono text-[13px] font-medium text-slate-900">${{ number_format($bill->getAmount(), 2) }}</td>
                         <td class="px-5 py-3.5">
                             <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11.5px] font-semibold bg-red-50 text-red-600">
