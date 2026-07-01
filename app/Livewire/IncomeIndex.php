@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Account;
+use App\Models\Frequency;
 use App\Models\OneOffIncome;
 use App\Models\RecurringIncome;
 use App\Models\RecurringIncomeOverride;
@@ -46,6 +47,32 @@ class IncomeIndex extends Component
     public ?int $deletingOccurrenceRuleId = null;
 
     public string $deletingOccurrenceDate = '';
+
+    // ── Add/Edit Income modal (one-off + recurring toggle) ──────────────────
+    public bool $showIncomeModal = false;
+
+    public bool $isRecurringIncome = false;
+
+    public ?int $editingOneOffIncomeId = null;
+
+    public string $incomeName = '';
+
+    public string $incomeAmount = '';
+
+    public string $incomeAccountId = '';
+
+    public string $incomeDate = '';
+
+    public string $incomeFrequencyId = '';
+
+    public string $incomeStartDate = '';
+
+    public string $incomeEndDate = '';
+
+    // ── Delete one-off income modal ──────────────────────────────────────────
+    public bool $showDeleteOneOffIncomeModal = false;
+
+    public ?int $deletingOneOffIncomeId = null;
 
     public function mount(): void
     {
@@ -225,6 +252,165 @@ class IncomeIndex extends Component
         $this->dispatch('toast', message: 'Income ended from this date onward.', type: 'success');
     }
 
+    // ── Add/Edit Income modal ───────────────────────────────────────────────
+
+    public function openAddIncomeModal(): void
+    {
+        $this->resetIncomeForm();
+        $this->editingOneOffIncomeId = null;
+        $this->isRecurringIncome = false;
+        $this->incomeDate = today()->toDateString();
+        $this->incomeStartDate = today()->toDateString();
+        $this->showIncomeModal = true;
+    }
+
+    public function openEditOneOffIncome(int $id): void
+    {
+        $income = OneOffIncome::where('user_id', auth()->id())->findOrFail($id);
+
+        $this->resetIncomeForm();
+        $this->editingOneOffIncomeId = $id;
+        $this->isRecurringIncome = false;
+        $this->incomeName = $income->name;
+        $this->incomeAmount = number_format((float) $income->amount, 2, '.', '');
+        $this->incomeDate = $income->income_date->toDateString();
+        $this->incomeAccountId = (string) $income->account_id;
+        $this->resetValidation();
+        $this->showIncomeModal = true;
+    }
+
+    public function closeIncomeModal(): void
+    {
+        $this->showIncomeModal = false;
+        $this->resetIncomeForm();
+    }
+
+    public function toggleRecurringIncome(): void
+    {
+        if ($this->isRecurringIncome) {
+            $this->incomeDate = $this->incomeStartDate;
+            $this->isRecurringIncome = false;
+        } else {
+            $this->incomeStartDate = $this->incomeDate;
+            $this->isRecurringIncome = true;
+        }
+    }
+
+    public function setIncomeEndDateOffset(string $period): void
+    {
+        $anchor = $this->incomeStartDate ? Carbon::parse($this->incomeStartDate) : today();
+
+        $this->incomeEndDate = match ($period) {
+            '3m' => $anchor->copy()->addMonths(3)->toDateString(),
+            '6m' => $anchor->copy()->addMonths(6)->toDateString(),
+            '1y' => $anchor->copy()->addYear()->toDateString(),
+            '2y' => $anchor->copy()->addYears(2)->toDateString(),
+            default => $this->incomeEndDate,
+        };
+    }
+
+    public function saveIncome(): void
+    {
+        if ($this->isRecurringIncome && ! $this->editingOneOffIncomeId) {
+            $this->saveRecurringIncomeFromModal();
+
+            return;
+        }
+
+        $this->validate([
+            'incomeName' => 'required|string|max:150',
+            'incomeAmount' => 'required|numeric|min:0.01',
+            'incomeDate' => 'required|date',
+            'incomeAccountId' => 'required|exists:accounts,id',
+        ]);
+
+        $data = [
+            'user_id' => auth()->id(),
+            'name' => $this->incomeName,
+            'amount' => $this->incomeAmount,
+            'income_date' => $this->incomeDate,
+            'account_id' => $this->incomeAccountId,
+        ];
+
+        if ($this->editingOneOffIncomeId) {
+            OneOffIncome::where('user_id', auth()->id())->findOrFail($this->editingOneOffIncomeId)->update($data);
+            $this->closeIncomeModal();
+            $this->dispatch('toast', message: 'Income updated.', type: 'success');
+
+            return;
+        }
+
+        OneOffIncome::create($data);
+        $this->closeIncomeModal();
+        $this->dispatch('toast', message: 'Income added.', type: 'success');
+    }
+
+    private function saveRecurringIncomeFromModal(): void
+    {
+        $this->validate([
+            'incomeName' => 'required|string|max:150',
+            'incomeFrequencyId' => 'required|exists:frequencies,id',
+            'incomeAccountId' => 'required|exists:accounts,id',
+            'incomeAmount' => 'required|numeric|min:0.01',
+            'incomeStartDate' => 'required|date',
+            'incomeEndDate' => 'nullable|date|after_or_equal:incomeStartDate',
+        ]);
+
+        RecurringIncome::create([
+            'user_id' => auth()->id(),
+            'name' => $this->incomeName,
+            'frequency_id' => $this->incomeFrequencyId,
+            'account_id' => $this->incomeAccountId,
+            'amount' => $this->incomeAmount,
+            'start_date' => $this->incomeStartDate,
+            'end_date' => $this->incomeEndDate ?: null,
+        ]);
+
+        app(RecurringIncomeService::class)->clearCache(auth()->id(), $this->year, $this->month);
+        $this->closeIncomeModal();
+        $this->dispatch('toast', message: 'Recurring income created.', type: 'success');
+    }
+
+    public function switchToDeleteOneOffIncome(): void
+    {
+        $id = $this->editingOneOffIncomeId;
+        $this->closeIncomeModal();
+        $this->confirmDeleteOneOffIncome($id);
+    }
+
+    public function confirmDeleteOneOffIncome(int $id): void
+    {
+        OneOffIncome::where('user_id', auth()->id())->findOrFail($id);
+        $this->deletingOneOffIncomeId = $id;
+        $this->showDeleteOneOffIncomeModal = true;
+    }
+
+    public function deleteOneOffIncome(): void
+    {
+        OneOffIncome::where('user_id', auth()->id())->findOrFail($this->deletingOneOffIncomeId)->delete();
+        $this->cancelDeleteOneOffIncome();
+        $this->dispatch('toast', message: 'Income deleted.', type: 'success');
+    }
+
+    public function cancelDeleteOneOffIncome(): void
+    {
+        $this->showDeleteOneOffIncomeModal = false;
+        $this->deletingOneOffIncomeId = null;
+    }
+
+    private function resetIncomeForm(): void
+    {
+        $this->incomeName = '';
+        $this->incomeAmount = '';
+        $this->incomeDate = '';
+        $this->incomeAccountId = '';
+        $this->incomeFrequencyId = '';
+        $this->incomeStartDate = '';
+        $this->incomeEndDate = '';
+        $this->isRecurringIncome = false;
+        $this->resetValidation();
+    }
+
     public function render()
     {
         $user = auth()->user();
@@ -241,7 +427,8 @@ class IncomeIndex extends Component
         $periodLabel = Carbon::create($this->year, $this->month, 1)->format('F Y');
 
         $accounts = Account::where('user_id', $user->id)->orderBy('name')->get();
+        $frequencies = Frequency::orderBy('id')->get();
 
-        return view('livewire.income-index', compact('instances', 'oneOff', 'total', 'periodLabel', 'accounts'))->layout('layouts.app', ['title' => 'Income']);
+        return view('livewire.income-index', compact('instances', 'oneOff', 'total', 'periodLabel', 'accounts', 'frequencies'))->layout('layouts.app', ['title' => 'Income']);
     }
 }
