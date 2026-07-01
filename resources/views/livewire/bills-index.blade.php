@@ -671,36 +671,36 @@
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Account</label>
-                    <select wire:model="billAccountId"
-                            class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] bg-white focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('billAccountId') border-red-400 @enderror">
-                        <option value="">Select…</option>
-                        @foreach($accounts as $account)
-                            <option value="{{ $account->id }}">{{ $account->name }}</option>
-                        @endforeach
-                    </select>
-                    @error('billAccountId') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
+                <div class="flex gap-2">
+                    <div class="flex-1 min-w-0">
+                        <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Account</label>
+                        <select wire:model="billAccountId"
+                                class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] bg-white focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('billAccountId') border-red-400 @enderror">
+                            <option value="">Select…</option>
+                            @foreach($accounts as $account)
+                                <option value="{{ $account->id }}">{{ $account->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('billAccountId') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                    @if($isRecurring && !$editingOneOffId)
+                    <div class="flex-shrink-0">
+                        <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5 text-center">Recurring</label>
+                        <button type="button" wire:click="toggleRecurring()" title="Recurring bill"
+                                class="w-[38px] h-[38px] flex items-center justify-center rounded-lg border border-green-600 bg-green-600 text-white transition-all">
+                            <i class="fa-solid fa-rotate text-sm"></i>
+                        </button>
+                    </div>
+                    @endif
                 </div>
 
                 @if($isRecurring)
                 <div class="grid grid-cols-2 gap-3">
-                    <div class="flex gap-2">
-                        <div class="flex-1 min-w-0">
-                            <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Start Date</label>
-                            <input wire:model="billStartDate" type="date"
-                                   class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('billStartDate') border-red-400 @enderror">
-                            @error('billStartDate') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
-                        </div>
-                        @if(!$editingOneOffId)
-                        <div class="flex-shrink-0">
-                            <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5 text-center">Recurring</label>
-                            <button type="button" wire:click="toggleRecurring()" title="Recurring bill"
-                                    class="w-[38px] h-[38px] flex items-center justify-center rounded-lg border border-green-600 bg-green-600 text-white transition-all">
-                                <i class="fa-solid fa-rotate text-sm"></i>
-                            </button>
-                        </div>
-                        @endif
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Start Date</label>
+                        <input wire:model="billStartDate" type="date"
+                               class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('billStartDate') border-red-400 @enderror">
+                        @error('billStartDate') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">End Date</label>
