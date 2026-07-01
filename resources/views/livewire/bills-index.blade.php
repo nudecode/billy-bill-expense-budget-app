@@ -603,7 +603,7 @@
                     @error('billBillerId') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="grid {{ $isRecurring ? 'grid-cols-2' : 'grid-cols-1 sm:grid-cols-2' }} gap-3">
                     <div>
                         <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Amount</label>
                         <div class="relative">
@@ -646,7 +646,7 @@
                     @endif
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Category</label>
                         <select wire:model.live="billCategoryId"
@@ -684,7 +684,7 @@
                 </div>
 
                 @if($isRecurring)
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="grid grid-cols-2 gap-3">
                     <div class="flex gap-2">
                         <div class="flex-1 min-w-0">
                             <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Start Date</label>
