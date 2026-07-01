@@ -613,29 +613,37 @@
                         </div>
                         @error('billAmount') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
                     </div>
+                    @if($isRecurring)
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Frequency</label>
+                        <select wire:model="billFrequencyId"
+                                class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] bg-white focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('billFrequencyId') border-red-400 @enderror">
+                            <option value="">Select…</option>
+                            @foreach($frequencies as $freq)
+                                <option value="{{ $freq->id }}">{{ $freq->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('billFrequencyId') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                    @else
                     <div class="flex gap-2">
                         <div class="flex-1 min-w-0">
-                            <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Date</label>
-                            @if($isRecurring)
-                            <input wire:model="billStartDate" type="date"
-                                   class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('billStartDate') border-red-400 @enderror">
-                            @else
+                            <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Due Date</label>
                             <input wire:model="billDueDate" type="date"
                                    class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('billDueDate') border-red-400 @enderror">
-                            @endif
-                            @error('billStartDate') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
                             @error('billDueDate') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
                         </div>
                         @if(!$editingOneOffId)
                         <div class="flex-shrink-0">
                             <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5 text-center">Recurring</label>
-                            <button type="button" wire:click="toggleRecurring()" title="{{ $isRecurring ? 'Recurring bill' : 'Make this a recurring bill' }}"
-                                    class="w-[38px] h-[38px] flex items-center justify-center rounded-lg border transition-all {{ $isRecurring ? 'bg-green-600 border-green-600 text-white' : 'border-slate-200 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600' }}">
+                            <button type="button" wire:click="toggleRecurring()" title="Make this a recurring bill"
+                                    class="w-[38px] h-[38px] flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all">
                                 <i class="fa-solid fa-rotate text-sm"></i>
                             </button>
                         </div>
                         @endif
                     </div>
+                    @endif
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -663,46 +671,50 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Account</label>
-                        <select wire:model="billAccountId"
-                                class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] bg-white focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('billAccountId') border-red-400 @enderror">
-                            <option value="">Select…</option>
-                            @foreach($accounts as $account)
-                                <option value="{{ $account->id }}">{{ $account->name }}</option>
-                            @endforeach
-                        </select>
-                        @error('billAccountId') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
-                    </div>
-                    @if($isRecurring)
-                    <div>
-                        <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Frequency</label>
-                        <select wire:model="billFrequencyId"
-                                class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] bg-white focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('billFrequencyId') border-red-400 @enderror">
-                            <option value="">Select…</option>
-                            @foreach($frequencies as $freq)
-                                <option value="{{ $freq->id }}">{{ $freq->name }}</option>
-                            @endforeach
-                        </select>
-                        @error('billFrequencyId') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
-                    </div>
-                    @endif
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Account</label>
+                    <select wire:model="billAccountId"
+                            class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] bg-white focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('billAccountId') border-red-400 @enderror">
+                        <option value="">Select…</option>
+                        @foreach($accounts as $account)
+                            <option value="{{ $account->id }}">{{ $account->name }}</option>
+                        @endforeach
+                    </select>
+                    @error('billAccountId') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
                 </div>
 
                 @if($isRecurring)
-                <div>
-                    <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">End Date</label>
-                    <input wire:model="billEndDate" type="date"
-                           class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('billEndDate') border-red-400 @enderror">
-                    <p class="text-[11.5px] text-slate-400 mt-1">Leave blank for a bill with no end date</p>
-                    <div class="flex gap-1.5 mt-2">
-                        <button type="button" wire:click="setBillEndDateOffset('3m')" class="px-2.5 py-1 text-[11.5px] font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors">3 mo</button>
-                        <button type="button" wire:click="setBillEndDateOffset('6m')" class="px-2.5 py-1 text-[11.5px] font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors">6 mo</button>
-                        <button type="button" wire:click="setBillEndDateOffset('1y')" class="px-2.5 py-1 text-[11.5px] font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors">1 yr</button>
-                        <button type="button" wire:click="setBillEndDateOffset('2y')" class="px-2.5 py-1 text-[11.5px] font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors">2 yr</button>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="flex gap-2">
+                        <div class="flex-1 min-w-0">
+                            <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Start Date</label>
+                            <input wire:model="billStartDate" type="date"
+                                   class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('billStartDate') border-red-400 @enderror">
+                            @error('billStartDate') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
+                        </div>
+                        @if(!$editingOneOffId)
+                        <div class="flex-shrink-0">
+                            <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5 text-center">Recurring</label>
+                            <button type="button" wire:click="toggleRecurring()" title="Recurring bill"
+                                    class="w-[38px] h-[38px] flex items-center justify-center rounded-lg border border-green-600 bg-green-600 text-white transition-all">
+                                <i class="fa-solid fa-rotate text-sm"></i>
+                            </button>
+                        </div>
+                        @endif
                     </div>
-                    @error('billEndDate') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">End Date</label>
+                        <input wire:model="billEndDate" type="date"
+                               class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('billEndDate') border-red-400 @enderror">
+                        <p class="text-[11px] text-slate-400 mt-1.5">Leave blank for a bill with no end date.</p>
+                        <div class="flex flex-wrap gap-1.5 mt-2">
+                            <button type="button" wire:click="setBillEndDateOffset('3m')" class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">3 mo</button>
+                            <button type="button" wire:click="setBillEndDateOffset('6m')" class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">6 mo</button>
+                            <button type="button" wire:click="setBillEndDateOffset('1y')" class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">1 yr</button>
+                            <button type="button" wire:click="setBillEndDateOffset('2y')" class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">2 yr</button>
+                        </div>
+                        @error('billEndDate') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
+                    </div>
                 </div>
                 @endif
 

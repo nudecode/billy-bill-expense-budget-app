@@ -296,6 +296,19 @@ class IncomeIndex extends Component
         }
     }
 
+    public function setIncomeEndDateOffset(string $period): void
+    {
+        $anchor = $this->incomeStartDate ? Carbon::parse($this->incomeStartDate) : today();
+
+        $this->incomeEndDate = match ($period) {
+            '3m' => $anchor->copy()->addMonths(3)->toDateString(),
+            '6m' => $anchor->copy()->addMonths(6)->toDateString(),
+            '1y' => $anchor->copy()->addYear()->toDateString(),
+            '2y' => $anchor->copy()->addYears(2)->toDateString(),
+            default => $this->incomeEndDate,
+        };
+    }
+
     public function saveIncome(): void
     {
         if ($this->isRecurringIncome && ! $this->editingOneOffIncomeId) {

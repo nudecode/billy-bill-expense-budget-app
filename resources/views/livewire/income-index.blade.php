@@ -160,43 +160,6 @@
                         </div>
                         @error('incomeAmount') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
                     </div>
-                    <div class="flex gap-2">
-                        <div class="flex-1 min-w-0">
-                            <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Date</label>
-                            @if($isRecurringIncome)
-                            <input wire:model="incomeStartDate" type="date"
-                                   class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('incomeStartDate') border-red-400 @enderror">
-                            @else
-                            <input wire:model="incomeDate" type="date"
-                                   class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('incomeDate') border-red-400 @enderror">
-                            @endif
-                            @error('incomeStartDate') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
-                            @error('incomeDate') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
-                        </div>
-                        @if(!$editingOneOffIncomeId)
-                        <div class="flex-shrink-0">
-                            <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5 text-center">Recurring</label>
-                            <button type="button" wire:click="toggleRecurringIncome()" title="{{ $isRecurringIncome ? 'Recurring income' : 'Make this recurring income' }}"
-                                    class="w-[38px] h-[38px] flex items-center justify-center rounded-lg border transition-all {{ $isRecurringIncome ? 'bg-green-600 border-green-600 text-white' : 'border-slate-200 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600' }}">
-                                <i class="fa-solid fa-rotate text-sm"></i>
-                            </button>
-                        </div>
-                        @endif
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Account</label>
-                        <select wire:model="incomeAccountId"
-                                class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] bg-white focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('incomeAccountId') border-red-400 @enderror">
-                            <option value="">Select…</option>
-                            @foreach($accounts as $account)
-                                <option value="{{ $account->id }}">{{ $account->name }}</option>
-                            @endforeach
-                        </select>
-                        @error('incomeAccountId') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
-                    </div>
                     @if($isRecurringIncome)
                     <div>
                         <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Frequency</label>
@@ -209,16 +172,71 @@
                         </select>
                         @error('incomeFrequencyId') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
                     </div>
+                    @else
+                    <div class="flex gap-2">
+                        <div class="flex-1 min-w-0">
+                            <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Date</label>
+                            <input wire:model="incomeDate" type="date"
+                                   class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('incomeDate') border-red-400 @enderror">
+                            @error('incomeDate') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
+                        </div>
+                        @if(!$editingOneOffIncomeId)
+                        <div class="flex-shrink-0">
+                            <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5 text-center">Recurring</label>
+                            <button type="button" wire:click="toggleRecurringIncome()" title="Make this recurring income"
+                                    class="w-[38px] h-[38px] flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all">
+                                <i class="fa-solid fa-rotate text-sm"></i>
+                            </button>
+                        </div>
+                        @endif
+                    </div>
                     @endif
                 </div>
 
-                @if($isRecurringIncome)
                 <div>
-                    <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">End Date</label>
-                    <input wire:model="incomeEndDate" type="date"
-                           class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('incomeEndDate') border-red-400 @enderror">
-                    <p class="text-[11.5px] text-slate-400 mt-1">Leave blank for income with no end date</p>
-                    @error('incomeEndDate') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
+                    <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Account</label>
+                    <select wire:model="incomeAccountId"
+                            class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] bg-white focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('incomeAccountId') border-red-400 @enderror">
+                        <option value="">Select…</option>
+                        @foreach($accounts as $account)
+                            <option value="{{ $account->id }}">{{ $account->name }}</option>
+                        @endforeach
+                    </select>
+                    @error('incomeAccountId') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
+                </div>
+
+                @if($isRecurringIncome)
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="flex gap-2">
+                        <div class="flex-1 min-w-0">
+                            <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Start Date</label>
+                            <input wire:model="incomeStartDate" type="date"
+                                   class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('incomeStartDate') border-red-400 @enderror">
+                            @error('incomeStartDate') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
+                        </div>
+                        @if(!$editingOneOffIncomeId)
+                        <div class="flex-shrink-0">
+                            <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5 text-center">Recurring</label>
+                            <button type="button" wire:click="toggleRecurringIncome()" title="Recurring income"
+                                    class="w-[38px] h-[38px] flex items-center justify-center rounded-lg border border-green-600 bg-green-600 text-white transition-all">
+                                <i class="fa-solid fa-rotate text-sm"></i>
+                            </button>
+                        </div>
+                        @endif
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">End Date</label>
+                        <input wire:model="incomeEndDate" type="date"
+                               class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('incomeEndDate') border-red-400 @enderror">
+                        <p class="text-[11px] text-slate-400 mt-1.5">Leave blank for income with no end date.</p>
+                        <div class="flex flex-wrap gap-1.5 mt-2">
+                            <button type="button" wire:click="setIncomeEndDateOffset('3m')" class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">3 mo</button>
+                            <button type="button" wire:click="setIncomeEndDateOffset('6m')" class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">6 mo</button>
+                            <button type="button" wire:click="setIncomeEndDateOffset('1y')" class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">1 yr</button>
+                            <button type="button" wire:click="setIncomeEndDateOffset('2y')" class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">2 yr</button>
+                        </div>
+                        @error('incomeEndDate') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
+                    </div>
                 </div>
                 @endif
 
