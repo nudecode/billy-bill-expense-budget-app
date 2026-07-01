@@ -21,19 +21,19 @@ class RecurringIncomeService
     private function generate(int $userId, int $year, int $month): array
     {
         $monthStart = Carbon::create($year, $month, 1)->startOfDay();
-        $monthEnd   = Carbon::create($year, $month, 1)->endOfMonth()->endOfDay();
+        $monthEnd = Carbon::create($year, $month, 1)->endOfMonth()->endOfDay();
 
         $rules = RecurringIncome::with(['frequency', 'account'])
             ->where('user_id', $userId)
             ->where('start_date', '<=', $monthEnd)
-            ->where('end_date', '>=', $monthStart)
+            ->where(fn ($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', $monthStart))
             ->get();
 
         $instances = [];
 
         foreach ($rules as $rule) {
-            $date    = $rule->start_date->copy();
-            $endDate = $rule->end_date->copy();
+            $date = $rule->start_date->copy();
+            $endDate = $rule->end_date ? $rule->end_date->copy() : $monthEnd;
 
             while ($date->lte($endDate)) {
                 if ($date->year === $year && $date->month === $month) {
@@ -56,10 +56,10 @@ class RecurringIncomeService
         $d = $date->copy();
 
         return match ($frequency->date_add_unit) {
-            'week'  => $d->addWeeks($frequency->date_add_value),
+            'week' => $d->addWeeks($frequency->date_add_value),
             'month' => $d->addMonths($frequency->date_add_value),
-            'year'  => $d->addYears($frequency->date_add_value),
-            'day'   => $d->addDays($frequency->date_add_value),
+            'year' => $d->addYears($frequency->date_add_value),
+            'day' => $d->addDays($frequency->date_add_value),
             default => throw new \InvalidArgumentException("Unknown unit: {$frequency->date_add_unit}"),
         };
     }
