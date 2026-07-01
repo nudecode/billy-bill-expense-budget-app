@@ -7,6 +7,7 @@ use App\Models\Biller;
 use App\Models\Category;
 use App\Models\Frequency;
 use App\Models\RecurringBill;
+use App\Models\Subcategory;
 use Carbon\Carbon;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -30,6 +31,8 @@ class RecurringBillsIndex extends Component
     public string $frequencyId = '';
 
     public string $categoryId = '';
+
+    public string $subcategoryId = '';
 
     public string $accountId = '';
 
@@ -64,6 +67,7 @@ class RecurringBillsIndex extends Component
         $this->billerId = (string) $rule->biller_id;
         $this->frequencyId = (string) $rule->frequency_id;
         $this->categoryId = (string) $rule->category_id;
+        $this->subcategoryId = $rule->subcategory_id ? (string) $rule->subcategory_id : '';
         $this->accountId = (string) $rule->account_id;
         $this->amount = number_format((float) $rule->amount, 2, '.', '');
         $this->startDate = $rule->start_date->toDateString();
@@ -77,6 +81,11 @@ class RecurringBillsIndex extends Component
     {
         $this->showModal = false;
         $this->resetForm();
+    }
+
+    public function updatedCategoryId(): void
+    {
+        $this->subcategoryId = '';
     }
 
     public function setEndDateOffset(string $period): void
@@ -98,6 +107,7 @@ class RecurringBillsIndex extends Component
             'billerId' => 'required|exists:billers,id',
             'frequencyId' => 'required|exists:frequencies,id',
             'categoryId' => 'required|exists:categories,id',
+            'subcategoryId' => 'nullable|exists:subcategories,id',
             'accountId' => 'required|exists:accounts,id',
             'amount' => 'required|numeric|min:0.01',
             'startDate' => 'required|date',
@@ -109,6 +119,7 @@ class RecurringBillsIndex extends Component
             'biller_id' => $this->billerId,
             'frequency_id' => $this->frequencyId,
             'category_id' => $this->categoryId,
+            'subcategory_id' => $this->subcategoryId ?: null,
             'account_id' => $this->accountId,
             'amount' => $this->amount,
             'start_date' => $this->startDate,
@@ -172,6 +183,7 @@ class RecurringBillsIndex extends Component
         $this->billerId = '';
         $this->frequencyId = '';
         $this->categoryId = '';
+        $this->subcategoryId = '';
         $this->accountId = '';
         $this->amount = '';
         $this->startDate = '';
@@ -181,7 +193,7 @@ class RecurringBillsIndex extends Component
 
     public function render()
     {
-        $rules = RecurringBill::with(['biller', 'frequency', 'category', 'account'])
+        $rules = RecurringBill::with(['biller', 'frequency', 'category', 'subcategory', 'account'])
             ->where('user_id', auth()->id())
             ->when($this->search, fn ($q) => $q->whereHas('biller', fn ($b) => $b->where('name', 'like', "%{$this->search}%")))
             ->orderByRaw('(end_date IS NULL) DESC, end_date DESC, start_date ASC')
@@ -190,10 +202,11 @@ class RecurringBillsIndex extends Component
         $billers = Biller::where('user_id', auth()->id())->orderBy('name')->get();
         $frequencies = Frequency::orderBy('id')->get();
         $categories = Category::orderBy('name')->get();
+        $subcategories = Subcategory::orderBy('name')->get();
         $accounts = Account::where('user_id', auth()->id())->orderBy('name')->get();
 
         return view('livewire.recurring-bills-index', compact(
-            'rules', 'billers', 'frequencies', 'categories', 'accounts'
+            'rules', 'billers', 'frequencies', 'categories', 'subcategories', 'accounts'
         ))->layout('layouts.app', ['title' => 'Recurring Bills']);
     }
 }

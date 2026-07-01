@@ -603,7 +603,7 @@
                     @error('billBillerId') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
                 </div>
 
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                         <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Amount</label>
                         <div class="relative">
@@ -613,9 +613,9 @@
                         </div>
                         @error('billAmount') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
                     </div>
-                    <div>
-                        <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Date</label>
-                        <div class="flex gap-2">
+                    <div class="flex gap-2">
+                        <div class="flex-1 min-w-0">
+                            <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Date</label>
                             @if($isRecurring)
                             <input wire:model="billStartDate" type="date"
                                    class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('billStartDate') border-red-400 @enderror">
@@ -623,19 +623,22 @@
                             <input wire:model="billDueDate" type="date"
                                    class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('billDueDate') border-red-400 @enderror">
                             @endif
-                            @if(!$editingOneOffId)
+                            @error('billStartDate') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
+                            @error('billDueDate') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
+                        </div>
+                        @if(!$editingOneOffId)
+                        <div class="flex-shrink-0">
+                            <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5 text-center">Recurring</label>
                             <button type="button" wire:click="toggleRecurring()" title="{{ $isRecurring ? 'Recurring bill' : 'Make this a recurring bill' }}"
-                                    class="w-[38px] h-[38px] flex-shrink-0 flex items-center justify-center rounded-lg border transition-all {{ $isRecurring ? 'bg-green-600 border-green-600 text-white' : 'border-slate-200 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600' }}">
+                                    class="w-[38px] h-[38px] flex items-center justify-center rounded-lg border transition-all {{ $isRecurring ? 'bg-green-600 border-green-600 text-white' : 'border-slate-200 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600' }}">
                                 <i class="fa-solid fa-rotate text-sm"></i>
                             </button>
-                            @endif
                         </div>
-                        @error('billStartDate') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
-                        @error('billDueDate') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
+                        @endif
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                         <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Category</label>
                         <select wire:model.live="billCategoryId"
@@ -646,6 +649,31 @@
                             @endforeach
                         </select>
                         @error('billCategoryId') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Subcategory <span class="font-normal normal-case tracking-normal text-slate-300">(optional)</span></label>
+                        <select wire:model="billSubcategoryId" wire:key="subcat-{{ $billCategoryId }}"
+                                class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] bg-white focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('billSubcategoryId') border-red-400 @enderror">
+                            <option value="">None</option>
+                            @foreach($subcategories->where('category_id', $billCategoryId) as $sub)
+                                <option value="{{ $sub->id }}">{{ $sub->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('billSubcategoryId') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Account</label>
+                        <select wire:model="billAccountId"
+                                class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] bg-white focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('billAccountId') border-red-400 @enderror">
+                            <option value="">Select…</option>
+                            @foreach($accounts as $account)
+                                <option value="{{ $account->id }}">{{ $account->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('billAccountId') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
                     </div>
                     @if($isRecurring)
                     <div>
@@ -659,31 +687,7 @@
                         </select>
                         @error('billFrequencyId') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
                     </div>
-                    @else
-                    <div>
-                        <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Subcategory <span class="font-normal normal-case tracking-normal text-slate-300">(optional)</span></label>
-                        <select wire:model="billSubcategoryId" wire:key="subcat-{{ $billCategoryId }}"
-                                class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] bg-white focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('billSubcategoryId') border-red-400 @enderror">
-                            <option value="">None</option>
-                            @foreach($subcategories->where('category_id', $billCategoryId) as $sub)
-                                <option value="{{ $sub->id }}">{{ $sub->name }}</option>
-                            @endforeach
-                        </select>
-                        @error('billSubcategoryId') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
-                    </div>
                     @endif
-                </div>
-
-                <div>
-                    <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Account</label>
-                    <select wire:model="billAccountId"
-                            class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] bg-white focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('billAccountId') border-red-400 @enderror">
-                        <option value="">Select…</option>
-                        @foreach($accounts as $account)
-                            <option value="{{ $account->id }}">{{ $account->name }}</option>
-                        @endforeach
-                    </select>
-                    @error('billAccountId') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
                 </div>
 
                 @if($isRecurring)

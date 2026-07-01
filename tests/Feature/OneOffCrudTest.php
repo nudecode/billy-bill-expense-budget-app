@@ -11,6 +11,7 @@ use App\Models\Frequency;
 use App\Models\OneOffBill;
 use App\Models\OneOffIncome;
 use App\Models\RecurringBill;
+use App\Models\Subcategory;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -98,6 +99,30 @@ class OneOffCrudTest extends TestCase
         ]);
         $this->assertDatabaseMissing('one_off_bills', [
             'user_id' => $this->user->id,
+        ]);
+    }
+
+    public function test_recurring_bill_saves_subcategory(): void
+    {
+        $subcategory = Subcategory::create(['category_id' => $this->category->id, 'name' => 'Test Sub']);
+
+        $this->actingAs($this->user);
+
+        $component = $this->billComponent();
+        $component->isRecurring = true;
+        $component->billBillerId = (string) $this->biller->id;
+        $component->billFrequencyId = (string) $this->frequency->id;
+        $component->billCategoryId = (string) $this->category->id;
+        $component->billSubcategoryId = (string) $subcategory->id;
+        $component->billAccountId = (string) $this->account->id;
+        $component->billAmount = '100.00';
+        $component->billStartDate = today()->toDateString();
+        app()->call([$component, 'saveBill']);
+
+        $this->assertDatabaseHas('recurring_bills', [
+            'user_id' => $this->user->id,
+            'biller_id' => $this->biller->id,
+            'subcategory_id' => $subcategory->id,
         ]);
     }
 

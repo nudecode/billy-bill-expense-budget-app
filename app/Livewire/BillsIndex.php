@@ -647,6 +647,7 @@ class BillsIndex extends Component
             'billBillerId' => 'required|exists:billers,id',
             'billFrequencyId' => 'required|exists:frequencies,id',
             'billCategoryId' => 'required|exists:categories,id',
+            'billSubcategoryId' => 'nullable|exists:subcategories,id',
             'billAccountId' => 'required|exists:accounts,id',
             'billAmount' => 'required|numeric|min:0.01',
             'billStartDate' => 'required|date',
@@ -658,6 +659,7 @@ class BillsIndex extends Component
             'biller_id' => $this->billBillerId,
             'frequency_id' => $this->billFrequencyId,
             'category_id' => $this->billCategoryId,
+            'subcategory_id' => $this->billSubcategoryId ?: null,
             'account_id' => $this->billAccountId,
             'amount' => $this->billAmount,
             'start_date' => $this->billStartDate,
@@ -683,6 +685,7 @@ class BillsIndex extends Component
         $this->billerSearch = $this->promptBillerName;
         $this->billAmount = $last ? number_format((float) $last->amount, 2, '.', '') : '';
         $this->billCategoryId = $last ? (string) $last->category_id : '';
+        $this->billSubcategoryId = $last && $last->subcategory_id ? (string) $last->subcategory_id : '';
         $this->billAccountId = $last ? (string) $last->account_id : '';
         $this->billStartDate = today()->toDateString();
         $this->showRecurringPromptModal = false;
