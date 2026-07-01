@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\DTOs\IncomeInstance;
 use App\Models\RecurringIncome;
+use App\Models\RecurringIncomeOverride;
 use Carbon\Carbon;
 
 class RecurringIncomeService
@@ -29,6 +30,14 @@ class RecurringIncomeService
             ->where(fn ($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', $monthStart))
             ->get();
 
+        // Index occurrence overrides (single-occurrence edits/skips) for this month by rule_id + date
+        $overrides = RecurringIncomeOverride::with('account')
+            ->whereIn('recurring_income_id', $rules->pluck('id'))
+            ->whereYear('occurrence_date', $year)
+            ->whereMonth('occurrence_date', $month)
+            ->get()
+            ->keyBy(fn ($o) => $o->recurring_income_id.'_'.$o->occurrence_date->toDateString());
+
         $instances = [];
 
         foreach ($rules as $rule) {
@@ -37,7 +46,12 @@ class RecurringIncomeService
 
             while ($date->lte($endDate)) {
                 if ($date->year === $year && $date->month === $month) {
-                    $instances[] = new IncomeInstance(rule: $rule, date: $date->copy());
+                    $key = $rule->id.'_'.$date->toDateString();
+                    $override = $overrides->get($key);
+
+                    if (! $override?->is_skipped) {
+                        $instances[] = new IncomeInstance(rule: $rule, date: $date->copy(), override: $override);
+                    }
                 } elseif ($date->year > $year || ($date->year === $year && $date->month > $month)) {
                     break;
                 }

@@ -7,6 +7,8 @@ use App\Models\Biller;
 use App\Models\Category;
 use App\Models\Frequency;
 use App\Models\RecurringBill;
+use App\Models\Subcategory;
+use Carbon\Carbon;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
@@ -16,24 +18,37 @@ use Livewire\Component;
 #[Title('Recurring Bills — Billy')]
 class RecurringBillsIndex extends Component
 {
-    #[Url] public string $search = '';
+    #[Url]
+    public string $search = '';
 
     // ── Create / Edit modal ───────────────────────────────────────────
     public bool $showModal = false;
+
     public ?int $editingId = null;
 
-    public string $billerId    = '';
+    public string $billerId = '';
+
     public string $frequencyId = '';
-    public string $categoryId  = '';
-    public string $accountId   = '';
-    public string $amount      = '';
-    public string $startDate   = '';
-    public string $endDate     = '';
+
+    public string $categoryId = '';
+
+    public string $subcategoryId = '';
+
+    public string $accountId = '';
+
+    public string $amount = '';
+
+    public string $startDate = '';
+
+    public string $endDate = '';
 
     // ── Delete / End modal ────────────────────────────────────────────
     public bool $showDeleteModal = false;
-    public ?int $deletingId      = null;
-    public bool $hasPayments     = false;
+
+    public ?int $deletingId = null;
+
+    public bool $hasPayments = false;
+
     public string $endDateChoice = '';
 
     public function openCreate(): void
@@ -48,14 +63,15 @@ class RecurringBillsIndex extends Component
     {
         $rule = RecurringBill::where('user_id', auth()->id())->findOrFail($id);
 
-        $this->editingId   = $id;
-        $this->billerId    = (string) $rule->biller_id;
+        $this->editingId = $id;
+        $this->billerId = (string) $rule->biller_id;
         $this->frequencyId = (string) $rule->frequency_id;
-        $this->categoryId  = (string) $rule->category_id;
-        $this->accountId   = (string) $rule->account_id;
-        $this->amount      = number_format((float) $rule->amount, 2, '.', '');
-        $this->startDate   = $rule->start_date->toDateString();
-        $this->endDate     = $rule->end_date?->toDateString() ?? '';
+        $this->categoryId = (string) $rule->category_id;
+        $this->subcategoryId = $rule->subcategory_id ? (string) $rule->subcategory_id : '';
+        $this->accountId = (string) $rule->account_id;
+        $this->amount = number_format((float) $rule->amount, 2, '.', '');
+        $this->startDate = $rule->start_date->toDateString();
+        $this->endDate = $rule->end_date?->toDateString() ?? '';
 
         $this->resetValidation();
         $this->showModal = true;
@@ -67,27 +83,47 @@ class RecurringBillsIndex extends Component
         $this->resetForm();
     }
 
+    public function updatedCategoryId(): void
+    {
+        $this->subcategoryId = '';
+    }
+
+    public function setEndDateOffset(string $period): void
+    {
+        $anchor = $this->startDate ? Carbon::parse($this->startDate) : today();
+
+        $this->endDate = match ($period) {
+            '3m' => $anchor->copy()->addMonths(3)->toDateString(),
+            '6m' => $anchor->copy()->addMonths(6)->toDateString(),
+            '1y' => $anchor->copy()->addYear()->toDateString(),
+            '2y' => $anchor->copy()->addYears(2)->toDateString(),
+            default => $this->endDate,
+        };
+    }
+
     public function save(): void
     {
         $this->validate([
-            'billerId'    => 'required|exists:billers,id',
+            'billerId' => 'required|exists:billers,id',
             'frequencyId' => 'required|exists:frequencies,id',
-            'categoryId'  => 'required|exists:categories,id',
-            'accountId'   => 'required|exists:accounts,id',
-            'amount'      => 'required|numeric|min:0.01',
-            'startDate'   => 'required|date',
-            'endDate'     => 'nullable|date|after_or_equal:startDate',
+            'categoryId' => 'required|exists:categories,id',
+            'subcategoryId' => 'nullable|exists:subcategories,id',
+            'accountId' => 'required|exists:accounts,id',
+            'amount' => 'required|numeric|min:0.01',
+            'startDate' => 'required|date',
+            'endDate' => 'nullable|date|after_or_equal:startDate',
         ]);
 
         $data = [
-            'user_id'      => auth()->id(),
-            'biller_id'    => $this->billerId,
+            'user_id' => auth()->id(),
+            'biller_id' => $this->billerId,
             'frequency_id' => $this->frequencyId,
-            'category_id'  => $this->categoryId,
-            'account_id'   => $this->accountId,
-            'amount'       => $this->amount,
-            'start_date'   => $this->startDate,
-            'end_date'     => $this->endDate ?: null,
+            'category_id' => $this->categoryId,
+            'subcategory_id' => $this->subcategoryId ?: null,
+            'account_id' => $this->accountId,
+            'amount' => $this->amount,
+            'start_date' => $this->startDate,
+            'end_date' => $this->endDate ?: null,
         ];
 
         if ($this->editingId) {
@@ -104,9 +140,9 @@ class RecurringBillsIndex extends Component
     public function confirmDelete(int $id): void
     {
         $rule = RecurringBill::where('user_id', auth()->id())->findOrFail($id);
-        $this->deletingId      = $id;
-        $this->hasPayments     = $rule->payments()->exists();
-        $this->endDateChoice   = today()->toDateString();
+        $this->deletingId = $id;
+        $this->hasPayments = $rule->payments()->exists();
+        $this->endDateChoice = today()->toDateString();
         $this->showDeleteModal = true;
     }
 
@@ -137,38 +173,40 @@ class RecurringBillsIndex extends Component
     public function cancelDelete(): void
     {
         $this->showDeleteModal = false;
-        $this->deletingId      = null;
-        $this->hasPayments     = false;
-        $this->endDateChoice   = '';
+        $this->deletingId = null;
+        $this->hasPayments = false;
+        $this->endDateChoice = '';
     }
 
     private function resetForm(): void
     {
-        $this->billerId    = '';
+        $this->billerId = '';
         $this->frequencyId = '';
-        $this->categoryId  = '';
-        $this->accountId   = '';
-        $this->amount      = '';
-        $this->startDate   = '';
-        $this->endDate     = '';
+        $this->categoryId = '';
+        $this->subcategoryId = '';
+        $this->accountId = '';
+        $this->amount = '';
+        $this->startDate = '';
+        $this->endDate = '';
         $this->resetValidation();
     }
 
     public function render()
     {
-        $rules = RecurringBill::with(['biller', 'frequency', 'category', 'account'])
+        $rules = RecurringBill::with(['biller', 'frequency', 'category', 'subcategory', 'account'])
             ->where('user_id', auth()->id())
             ->when($this->search, fn ($q) => $q->whereHas('biller', fn ($b) => $b->where('name', 'like', "%{$this->search}%")))
             ->orderByRaw('(end_date IS NULL) DESC, end_date DESC, start_date ASC')
             ->get();
 
-        $billers     = Biller::where('user_id', auth()->id())->orderBy('name')->get();
+        $billers = Biller::where('user_id', auth()->id())->orderBy('name')->get();
         $frequencies = Frequency::orderBy('id')->get();
-        $categories  = Category::orderBy('name')->get();
-        $accounts    = Account::where('user_id', auth()->id())->orderBy('name')->get();
+        $categories = Category::orderBy('name')->get();
+        $subcategories = Subcategory::orderBy('name')->get();
+        $accounts = Account::where('user_id', auth()->id())->orderBy('name')->get();
 
         return view('livewire.recurring-bills-index', compact(
-            'rules', 'billers', 'frequencies', 'categories', 'accounts'
+            'rules', 'billers', 'frequencies', 'categories', 'subcategories', 'accounts'
         ))->layout('layouts.app', ['title' => 'Recurring Bills']);
     }
 }

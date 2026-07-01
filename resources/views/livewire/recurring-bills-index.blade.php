@@ -157,11 +157,11 @@
                     </div>
                 </div>
 
-                {{-- Category + Account --}}
+                {{-- Category + Subcategory --}}
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-[11px] font-bold uppercase tracking-widests text-slate-400 mb-1.5">Category</label>
-                        <select wire:model="categoryId"
+                        <select wire:model.live="categoryId"
                                 class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] bg-white focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('categoryId') border-red-400 @enderror">
                             <option value="">Select…</option>
                             @foreach($categories as $cat)
@@ -171,16 +171,29 @@
                         @error('categoryId') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
                     </div>
                     <div>
-                        <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Account</label>
-                        <select wire:model="accountId"
-                                class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] bg-white focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('accountId') border-red-400 @enderror">
-                            <option value="">Select…</option>
-                            @foreach($accounts as $account)
-                                <option value="{{ $account->id }}">{{ $account->name }}</option>
+                        <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Subcategory <span class="font-normal normal-case tracking-normal text-slate-300">(optional)</span></label>
+                        <select wire:model="subcategoryId" wire:key="subcat-{{ $categoryId }}"
+                                class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] bg-white focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('subcategoryId') border-red-400 @enderror">
+                            <option value="">None</option>
+                            @foreach($subcategories->where('category_id', $categoryId) as $sub)
+                                <option value="{{ $sub->id }}">{{ $sub->name }}</option>
                             @endforeach
                         </select>
-                        @error('accountId') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
+                        @error('subcategoryId') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
                     </div>
+                </div>
+
+                {{-- Account --}}
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Account</label>
+                    <select wire:model="accountId"
+                            class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] bg-white focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('accountId') border-red-400 @enderror">
+                        <option value="">Select…</option>
+                        @foreach($accounts as $account)
+                            <option value="{{ $account->id }}">{{ $account->name }}</option>
+                        @endforeach
+                    </select>
+                    @error('accountId') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
                 </div>
 
                 {{-- Start Date + End Date --}}
@@ -192,12 +205,21 @@
                         @error('startDate') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
                     </div>
                     <div>
-                        <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">
-                            End Date <span class="font-normal normal-case tracking-normal text-slate-300">(optional)</span>
-                        </label>
+                        <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">End Date</label>
                         <input wire:model="endDate" type="date"
                                class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('endDate') border-red-400 @enderror">
                         @error('endDate') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
+                        <p class="text-[11px] text-slate-400 mt-1.5">Leave blank for a bill with no end date.</p>
+                        <div class="flex flex-wrap gap-1.5 mt-2">
+                            <button wire:click="setEndDateOffset('3m')" type="button"
+                                    class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">3 mo</button>
+                            <button wire:click="setEndDateOffset('6m')" type="button"
+                                    class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">6 mo</button>
+                            <button wire:click="setEndDateOffset('1y')" type="button"
+                                    class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">1 yr</button>
+                            <button wire:click="setEndDateOffset('2y')" type="button"
+                                    class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">2 yr</button>
+                        </div>
                     </div>
                 </div>
             </div>
