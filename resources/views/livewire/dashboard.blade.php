@@ -67,7 +67,7 @@
         </a>
 
         {{-- Unpaid --}}
-        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm relative overflow-hidden">
+        <a href="{{ route('bills', ['tab' => 'unpaid', 'selectedDate' => '', 'y' => $year, 'm' => $month]) }}" class="group bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 relative overflow-hidden">
             <div class="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-red-600 to-red-400 rounded-t-2xl"></div>
             <div class="flex items-center justify-between mb-3">
                 <div class="w-9 h-9 rounded-xl bg-red-50 flex items-center justify-center text-red-500"><i class="fa-regular fa-clock text-base"></i></div>
@@ -79,7 +79,7 @@
             <div class="h-1 bg-slate-100 rounded-full mt-3 overflow-hidden">
                 <div class="h-full bg-red-600 rounded-full" style="width:{{ ($paidCount + $unpaidCount) > 0 ? ($unpaidCount/($paidCount+$unpaidCount))*100 : 0 }}%"></div>
             </div>
-        </div>
+        </a>
 
         {{-- Net --}}
         <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm relative overflow-hidden">
@@ -127,7 +127,7 @@
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                     @foreach($upcoming as $bill)
-                    <tr class="hover:bg-slate-50/50 transition-colors">
+                    <tr onclick="window.location='{{ route('bills', ['selectedDate' => $bill->date->toDateString(), 'y' => $year, 'm' => $month]) }}'" class="hover:bg-slate-50/50 transition-colors cursor-pointer">
                         <td class="px-5 py-3.5">
                             <div class="flex items-center gap-2.5">
                                 <div class="w-8 h-8 rounded-lg flex items-center justify-center text-[12px] font-bold flex-shrink-0"

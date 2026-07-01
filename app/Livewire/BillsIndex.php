@@ -142,7 +142,7 @@ class BillsIndex extends Component
     {
         $this->year ??= now()->year;
         $this->month ??= now()->month;
-        if (! $this->selectedDate) {
+        if (! $this->selectedDate && ! request()->has('selectedDate')) {
             $this->selectedDate = now()->toDateString();
         }
     }
