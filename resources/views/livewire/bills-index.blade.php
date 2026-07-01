@@ -216,7 +216,7 @@
                     </button>
                     @endif
                     <button disabled title="Editing individual occurrences is coming soon"
-                            class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-300 cursor-not-allowed">
+                            class="hidden sm:flex w-8 h-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-300 cursor-not-allowed">
                         <i class="fa-regular fa-pen-to-square text-sm"></i>
                     </button>
                 </div>
@@ -298,7 +298,7 @@
                                 </button>
                                 @endif
                                 <button disabled title="Editing individual occurrences is coming soon"
-                                        class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-300 cursor-not-allowed">
+                                        class="hidden sm:flex w-8 h-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-300 cursor-not-allowed">
                                     <i class="fa-regular fa-pen-to-square text-sm"></i>
                                 </button>
                             </div>
