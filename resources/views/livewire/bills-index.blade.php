@@ -486,18 +486,77 @@
                 </button>
             </div>
 
-            {{-- Footer — apply-to choice --}}
-            <div class="px-5 py-4 border-t border-slate-100 space-y-2">
-                <p class="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1">Apply changes to</p>
+            {{-- Footer --}}
+            <div class="flex items-center justify-end gap-3 px-5 py-4 border-t border-slate-100">
+                <button wire:click="closeEditModal()" type="button"
+                        class="px-4 py-2 text-[13px] font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition-all">
+                    Cancel
+                </button>
+                <button wire:click="proceedFromEdit()" wire:loading.attr="disabled" wire:target="proceedFromEdit"
+                        class="flex items-center gap-2 px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-[13px] font-semibold rounded-lg transition-all disabled:opacity-60">
+                    <span wire:loading.remove wire:target="proceedFromEdit">Save</span>
+                    <span wire:loading wire:target="proceedFromEdit" class="flex items-center gap-1.5"><i class="fa-solid fa-spinner fa-spin text-xs"></i> Saving…</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- ── EDIT SCOPE MODAL ────────────────────────────────────────────── --}}
+    @if($showEditScopeModal)
+    <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+         x-data="{ open: false }"
+         x-init="$nextTick(() => open = true)"
+         @keydown.escape.window="$wire.cancelEditScope()">
+
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"
+             x-show="open" x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+             @click="$wire.cancelEditScope()"></div>
+
+        <div class="relative bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl shadow-xl z-10"
+             x-show="open"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 translate-y-4"
+             x-transition:enter-end="opacity-100 translate-y-0">
+
+            <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center">
+                        <i class="fa-regular fa-pen-to-square text-slate-500 text-sm"></i>
+                    </div>
+                    <h2 class="text-[15px] font-bold text-slate-900">Apply Changes To</h2>
+                </div>
+                <button wire:click="cancelEditScope()" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 transition-all">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="px-5 py-4">
+                <p class="text-[13.5px] text-slate-600 leading-relaxed mb-3">
+                    Updating just this occurrence leaves every other month of this recurring bill untouched.
+                </p>
                 <button wire:click="saveEditOccurrence('this')" wire:loading.attr="disabled" wire:target="saveEditOccurrence"
                         class="w-full flex items-center justify-between px-4 py-2.5 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-all disabled:opacity-60">
                     <span class="text-[13px] font-semibold text-slate-800">This occurrence only</span>
                     <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i>
                 </button>
+            </div>
+
+            <div class="px-5 py-4 border-t border-slate-100">
+                <p class="text-[13.5px] text-slate-600 leading-relaxed mb-3">
+                    Updating this and all future occurrences changes the recurring bill permanently from this date onward.
+                </p>
                 <button wire:click="saveEditOccurrence('future')" wire:loading.attr="disabled" wire:target="saveEditOccurrence"
                         class="w-full flex items-center justify-between px-4 py-2.5 bg-green-600 hover:bg-green-700 rounded-lg transition-all disabled:opacity-60">
                     <span class="text-[13px] font-semibold text-white">This and all future occurrences</span>
                     <i class="fa-solid fa-chevron-right text-white/70 text-xs"></i>
+                </button>
+            </div>
+
+            <div class="px-5 py-4 border-t border-slate-100">
+                <button wire:click="cancelEditScope()" class="w-full px-4 py-2.5 text-[13px] font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all">
+                    Cancel
                 </button>
             </div>
         </div>
@@ -534,16 +593,21 @@
                 </button>
             </div>
 
-            <div class="px-5 py-4 space-y-2">
-                <p class="text-[13.5px] text-slate-600 leading-relaxed mb-2">
+            <div class="px-5 py-4">
+                <p class="text-[13.5px] text-slate-600 leading-relaxed mb-3">
                     Removing just this occurrence leaves the recurring bill and every other month untouched.
-                    Removing this and all future occurrences ends the recurring bill from this date onward.
                 </p>
                 <button wire:click="deleteOccurrenceThisOnly()" wire:loading.attr="disabled" wire:target="deleteOccurrenceThisOnly"
                         class="w-full flex items-center justify-between px-4 py-2.5 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-all disabled:opacity-60">
                     <span class="text-[13px] font-semibold text-slate-800">This occurrence only</span>
                     <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i>
                 </button>
+            </div>
+
+            <div class="px-5 py-4 border-t border-slate-100">
+                <p class="text-[13.5px] text-slate-600 leading-relaxed mb-3">
+                    Removing this and all future occurrences ends the recurring bill from this date onward.
+                </p>
                 <button wire:click="deleteOccurrenceAllFuture()" wire:loading.attr="disabled" wire:target="deleteOccurrenceAllFuture"
                         class="w-full flex items-center justify-between px-4 py-2.5 bg-red-600 hover:bg-red-700 rounded-lg transition-all disabled:opacity-60">
                     <span class="text-[13px] font-semibold text-white">This and all future occurrences</span>

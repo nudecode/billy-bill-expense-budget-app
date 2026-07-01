@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Account;
 use App\Models\Frequency;
 use App\Models\RecurringIncome;
+use Carbon\Carbon;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
@@ -69,6 +70,19 @@ class RecurringIncomeIndex extends Component
     {
         $this->showModal = false;
         $this->resetForm();
+    }
+
+    public function setEndDateOffset(string $period): void
+    {
+        $anchor = $this->startDate ? Carbon::parse($this->startDate) : today();
+
+        $this->endDate = match ($period) {
+            '3m' => $anchor->copy()->addMonths(3)->toDateString(),
+            '6m' => $anchor->copy()->addMonths(6)->toDateString(),
+            '1y' => $anchor->copy()->addYear()->toDateString(),
+            '2y' => $anchor->copy()->addYears(2)->toDateString(),
+            default => $this->endDate,
+        };
     }
 
     public function save(): void

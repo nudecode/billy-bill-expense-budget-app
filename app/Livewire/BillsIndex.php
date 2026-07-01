@@ -57,6 +57,8 @@ class BillsIndex extends Component
     // ── Edit occurrence modal (unpaid bills only) ───────────────────────────
     public bool $showEditModal = false;
 
+    public bool $showEditScopeModal = false;
+
     public ?int $editingRuleId = null;
 
     public string $editingDate = '';
@@ -66,6 +68,12 @@ class BillsIndex extends Component
     public string $editCategoryId = '';
 
     public string $editAccountId = '';
+
+    public string $editOriginalAmount = '';
+
+    public string $editOriginalCategoryId = '';
+
+    public string $editOriginalAccountId = '';
 
     // ── Delete occurrence modal (unpaid bills only) ─────────────────────────
     public bool $showDeleteOccurrenceModal = false;
@@ -186,7 +194,7 @@ class BillsIndex extends Component
         $rule = RecurringBill::where('user_id', auth()->id())->findOrFail($ruleId);
 
         $override = RecurringBillOverride::where('recurring_bill_id', $ruleId)
-            ->where('occurrence_date', $date)
+            ->whereDate('occurrence_date', $date)
             ->first();
 
         $this->editingRuleId = $ruleId;
@@ -194,6 +202,9 @@ class BillsIndex extends Component
         $this->editAmount = number_format((float) ($override->amount ?? $rule->amount), 2, '.', '');
         $this->editCategoryId = (string) ($override->category_id ?? $rule->category_id);
         $this->editAccountId = (string) ($override->account_id ?? $rule->account_id);
+        $this->editOriginalAmount = $this->editAmount;
+        $this->editOriginalCategoryId = $this->editCategoryId;
+        $this->editOriginalAccountId = $this->editAccountId;
         $this->resetValidation();
         $this->showEditModal = true;
     }
@@ -201,9 +212,40 @@ class BillsIndex extends Component
     public function closeEditModal(): void
     {
         $this->showEditModal = false;
+        $this->showEditScopeModal = false;
         $this->editingRuleId = null;
         $this->editingDate = '';
         $this->resetValidation();
+    }
+
+    public function proceedFromEdit(): void
+    {
+        $this->validate([
+            'editAmount' => 'required|numeric|min:0.01',
+            'editCategoryId' => 'required|exists:categories,id',
+            'editAccountId' => 'required|exists:accounts,id',
+        ]);
+
+        $unchanged = number_format((float) $this->editAmount, 2, '.', '') === number_format((float) $this->editOriginalAmount, 2, '.', '')
+            && $this->editCategoryId === $this->editOriginalCategoryId
+            && $this->editAccountId === $this->editOriginalAccountId;
+
+        if ($unchanged) {
+            $this->closeEditModal();
+            $this->dispatch('toast', message: 'No changes made.', type: 'success');
+
+            return;
+        }
+
+        $this->showEditModal = false;
+        $this->showEditScopeModal = true;
+    }
+
+    public function cancelEditScope(): void
+    {
+        $this->showEditScopeModal = false;
+        $this->editingRuleId = null;
+        $this->editingDate = '';
     }
 
     public function saveEditOccurrence(string $scope): void
@@ -219,15 +261,28 @@ class BillsIndex extends Component
         if ($scope === 'future') {
             $this->splitRuleForFutureEdit($rule);
         } else {
-            RecurringBillOverride::updateOrCreate(
-                ['recurring_bill_id' => $rule->id, 'occurrence_date' => $this->editingDate],
-                ['is_skipped' => false, 'amount' => $this->editAmount, 'category_id' => $this->editCategoryId, 'account_id' => $this->editAccountId]
-            );
+            $override = $this->findOrNewOverride($rule->id, $this->editingDate);
+            $override->fill([
+                'is_skipped' => false,
+                'amount' => $this->editAmount,
+                'category_id' => $this->editCategoryId,
+                'account_id' => $this->editAccountId,
+            ]);
+            $override->save();
         }
 
         app(RecurringBillService::class)->clearCache(auth()->id(), $this->year, $this->month);
-        $this->closeEditModal();
+        $this->showEditScopeModal = false;
+        $this->editingRuleId = null;
+        $this->editingDate = '';
         $this->dispatch('toast', message: 'Bill updated.', type: 'success');
+    }
+
+    private function findOrNewOverride(int $ruleId, string $date): RecurringBillOverride
+    {
+        return RecurringBillOverride::where('recurring_bill_id', $ruleId)
+            ->whereDate('occurrence_date', $date)
+            ->first() ?? new RecurringBillOverride(['recurring_bill_id' => $ruleId, 'occurrence_date' => $date]);
     }
 
     private function splitRuleForFutureEdit(RecurringBill $rule): void
@@ -275,10 +330,9 @@ class BillsIndex extends Component
 
     public function deleteOccurrenceThisOnly(): void
     {
-        RecurringBillOverride::updateOrCreate(
-            ['recurring_bill_id' => $this->deletingOccurrenceRuleId, 'occurrence_date' => $this->deletingOccurrenceDate],
-            ['is_skipped' => true]
-        );
+        $override = $this->findOrNewOverride($this->deletingOccurrenceRuleId, $this->deletingOccurrenceDate);
+        $override->is_skipped = true;
+        $override->save();
 
         app(RecurringBillService::class)->clearCache(auth()->id(), $this->year, $this->month);
         $this->cancelDeleteOccurrence();
