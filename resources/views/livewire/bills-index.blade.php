@@ -254,7 +254,7 @@
                         <th class="text-left px-5 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400 hidden md:table-cell">Category</th>
                         <th class="text-left px-5 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400 hidden sm:table-cell">Due Date</th>
                         <th class="text-left px-5 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400">Amount</th>
-                        <th class="text-left px-5 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400">Status</th>
+                        <th class="text-left px-5 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400 hidden sm:table-cell">Status</th>
                         <th class="px-2 sm:px-5 py-3 w-24"></th>
                     </tr>
                 </thead>
@@ -277,8 +277,17 @@
                             <span class="inline-flex px-2.5 py-0.5 rounded-full text-[11.5px] font-medium bg-slate-100 text-slate-600 border border-slate-200">{{ $bill->getCategoryName() }}</span>
                         </td>
                         <td class="px-5 py-3.5 font-mono text-[12.5px] text-slate-700 hidden sm:table-cell">{{ $bill->date->format('d M Y') }}</td>
-                        <td class="px-5 py-3.5 font-mono text-[13px] font-medium text-slate-900">${{ number_format($bill->getAmount(), 2) }}</td>
                         <td class="px-5 py-3.5">
+                            <div class="font-mono text-[13px] font-medium text-slate-900">${{ number_format($bill->getAmount(), 2) }}</div>
+                            @if($bill->isPaid)
+                                <span class="block sm:hidden text-[11px] font-semibold text-emerald-600 mt-0.5">Paid</span>
+                            @elseif($bill->date->toDateString() < $today)
+                                <span class="block sm:hidden text-[11px] font-semibold text-red-500 mt-0.5">Overdue</span>
+                            @else
+                                <span class="block sm:hidden text-[11px] font-semibold text-slate-400 mt-0.5">Due</span>
+                            @endif
+                        </td>
+                        <td class="px-5 py-3.5 hidden sm:table-cell">
                             @if($bill->isPaid)
                                 <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11.5px] font-semibold bg-emerald-50 text-emerald-600"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0"></span>Paid</span>
                             @elseif($bill->date->toDateString() < $today)
