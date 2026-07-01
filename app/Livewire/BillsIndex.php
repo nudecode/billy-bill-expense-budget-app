@@ -3,14 +3,17 @@
 namespace App\Livewire;
 
 use App\Models\Account;
+use App\Models\Biller;
 use App\Models\Category;
+use App\Models\Frequency;
+use App\Models\OneOffBill;
 use App\Models\Payment;
 use App\Models\RecurringBill;
 use App\Models\RecurringBillOverride;
+use App\Models\Subcategory;
 use App\Services\RecurringBillService;
 use Carbon\Carbon;
 use Livewire\Attributes\Layout;
-use Livewire\Attributes\Rule;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -40,18 +43,18 @@ class BillsIndex extends Component
     // ── Pay modal state ───────────────────────────────────────────────────
     public bool $showPayModal = false;
 
+    public string $payType = 'recurring'; // 'recurring' | 'oneoff'
+
     public ?int $payingRuleId = null;
 
-    #[Rule('required|date')]
+    public ?int $payOneOffId = null;
+
     public string $payDate = '';
 
-    #[Rule('required|numeric|min:0')]
     public string $payAmount = '';
 
-    #[Rule('nullable|string|max:100')]
     public string $payReference = '';
 
-    #[Rule('nullable|string|max:1000')]
     public string $payNotes = '';
 
     // ── Edit occurrence modal (unpaid bills only) ───────────────────────────
@@ -81,6 +84,45 @@ class BillsIndex extends Component
     public ?int $deletingOccurrenceRuleId = null;
 
     public string $deletingOccurrenceDate = '';
+
+    // ── Add/Edit Bill modal (one-off + recurring toggle) ────────────────────
+    public bool $showBillModal = false;
+
+    public bool $isRecurring = false;
+
+    public ?int $editingOneOffId = null;
+
+    public string $billBillerId = '';
+
+    public string $billerSearch = '';
+
+    public string $billAmount = '';
+
+    public string $billDueDate = '';
+
+    public string $billCategoryId = '';
+
+    public string $billSubcategoryId = '';
+
+    public string $billAccountId = '';
+
+    public string $billFrequencyId = '';
+
+    public string $billStartDate = '';
+
+    public string $billEndDate = '';
+
+    // ── Delete one-off bill modal ────────────────────────────────────────────
+    public bool $showDeleteOneOffModal = false;
+
+    public ?int $deletingOneOffId = null;
+
+    // ── Recurring-prompt nudge modal ─────────────────────────────────────────
+    public bool $showRecurringPromptModal = false;
+
+    public ?int $promptBillerId = null;
+
+    public string $promptBillerName = '';
 
     public function mount(): void
     {
@@ -137,15 +179,26 @@ class BillsIndex extends Component
         $this->month = $date->month;
     }
 
-    public function openPayModal(int $ruleId, string $date): void
+    public function openPayModal(string $type, int $id, ?string $date = null): void
     {
-        $rule = RecurringBill::where('user_id', auth()->id())->findOrFail($ruleId);
-
-        $this->payingRuleId = $ruleId;
-        $this->payDate = $date;
-        $this->payAmount = number_format((float) $rule->amount, 2, '.', '');
+        $this->payType = $type;
         $this->payReference = '';
         $this->payNotes = '';
+
+        if ($type === 'oneoff') {
+            $bill = OneOffBill::where('user_id', auth()->id())->findOrFail($id);
+            $this->payOneOffId = $id;
+            $this->payingRuleId = null;
+            $this->payDate = $bill->due_date->toDateString();
+            $this->payAmount = number_format((float) $bill->amount, 2, '.', '');
+        } else {
+            $rule = RecurringBill::where('user_id', auth()->id())->findOrFail($id);
+            $this->payingRuleId = $id;
+            $this->payOneOffId = null;
+            $this->payDate = $date;
+            $this->payAmount = number_format((float) $rule->amount, 2, '.', '');
+        }
+
         $this->resetValidation();
         $this->showPayModal = true;
     }
@@ -154,12 +207,36 @@ class BillsIndex extends Component
     {
         $this->showPayModal = false;
         $this->payingRuleId = null;
+        $this->payOneOffId = null;
         $this->resetValidation();
     }
 
     public function savePayment(): void
     {
-        $this->validate();
+        if ($this->payType === 'oneoff') {
+            $this->validate([
+                'payDate' => 'required|date',
+                'payAmount' => 'required|numeric|min:0',
+            ]);
+
+            OneOffBill::where('user_id', auth()->id())->findOrFail($this->payOneOffId)->update([
+                'is_paid' => true,
+                'date_paid' => $this->payDate,
+                'amount' => $this->payAmount,
+            ]);
+
+            $this->closePayModal();
+            $this->dispatch('toast', message: 'Payment recorded.', type: 'success');
+
+            return;
+        }
+
+        $this->validate([
+            'payDate' => 'required|date',
+            'payAmount' => 'required|numeric|min:0',
+            'payReference' => 'nullable|string|max:100',
+            'payNotes' => 'nullable|string|max:1000',
+        ]);
 
         $user = auth()->user();
         $rule = RecurringBill::where('user_id', $user->id)->findOrFail($this->payingRuleId);
@@ -349,12 +426,259 @@ class BillsIndex extends Component
         $this->dispatch('toast', message: 'Bill ended from this date onward.', type: 'success');
     }
 
+    // ── Add/Edit Bill modal ─────────────────────────────────────────────────
+
+    public function openAddBillModal(): void
+    {
+        $this->resetBillForm();
+        $this->editingOneOffId = null;
+        $this->isRecurring = false;
+        $this->billDueDate = $this->selectedDate ?: today()->toDateString();
+        $this->billStartDate = $this->selectedDate ?: today()->toDateString();
+        $this->showBillModal = true;
+    }
+
+    public function openEditOneOff(int $id): void
+    {
+        $bill = OneOffBill::where('user_id', auth()->id())->findOrFail($id);
+
+        $this->resetBillForm();
+        $this->editingOneOffId = $id;
+        $this->isRecurring = false;
+        $this->billBillerId = (string) $bill->biller_id;
+        $this->billerSearch = $bill->biller->name;
+        $this->billAmount = number_format((float) $bill->amount, 2, '.', '');
+        $this->billDueDate = $bill->due_date->toDateString();
+        $this->billCategoryId = (string) $bill->category_id;
+        $this->billSubcategoryId = $bill->subcategory_id ? (string) $bill->subcategory_id : '';
+        $this->billAccountId = (string) $bill->account_id;
+        $this->resetValidation();
+        $this->showBillModal = true;
+    }
+
+    public function closeBillModal(): void
+    {
+        $this->showBillModal = false;
+        $this->resetBillForm();
+    }
+
+    public function selectBiller(int $billerId): void
+    {
+        $biller = Biller::where('user_id', auth()->id())->findOrFail($billerId);
+        $this->billBillerId = (string) $billerId;
+        $this->billerSearch = $biller->name;
+
+        if ($this->isRecurring) {
+            return;
+        }
+
+        $lastOneOff = OneOffBill::where('user_id', auth()->id())
+            ->where('biller_id', $billerId)
+            ->orderByDesc('due_date')
+            ->first();
+
+        if ($lastOneOff) {
+            if ($this->billAmount === '') {
+                $this->billAmount = number_format((float) $lastOneOff->amount, 2, '.', '');
+            }
+            $this->billCategoryId = (string) $lastOneOff->category_id;
+            $this->billSubcategoryId = $lastOneOff->subcategory_id ? (string) $lastOneOff->subcategory_id : '';
+
+            return;
+        }
+
+        $activeRecurring = RecurringBill::where('user_id', auth()->id())
+            ->where('biller_id', $billerId)
+            ->where(fn ($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', today()))
+            ->latest('start_date')
+            ->first();
+
+        if ($activeRecurring) {
+            if ($this->billAmount === '') {
+                $this->billAmount = number_format((float) $activeRecurring->amount, 2, '.', '');
+            }
+            $this->billCategoryId = (string) $activeRecurring->category_id;
+        }
+    }
+
+    public function updatedBillCategoryId(): void
+    {
+        $this->billSubcategoryId = '';
+    }
+
+    public function setBillEndDateOffset(string $period): void
+    {
+        $anchor = $this->billStartDate ? Carbon::parse($this->billStartDate) : today();
+
+        $this->billEndDate = match ($period) {
+            '3m' => $anchor->copy()->addMonths(3)->toDateString(),
+            '6m' => $anchor->copy()->addMonths(6)->toDateString(),
+            '1y' => $anchor->copy()->addYear()->toDateString(),
+            '2y' => $anchor->copy()->addYears(2)->toDateString(),
+            default => $this->billEndDate,
+        };
+    }
+
+    public function saveBill(): void
+    {
+        if ($this->isRecurring && ! $this->editingOneOffId) {
+            $this->saveRecurringFromModal();
+
+            return;
+        }
+
+        $this->validate([
+            'billBillerId' => 'required|exists:billers,id',
+            'billAmount' => 'required|numeric|min:0.01',
+            'billDueDate' => 'required|date',
+            'billCategoryId' => 'required|exists:categories,id',
+            'billSubcategoryId' => 'nullable|exists:subcategories,id',
+            'billAccountId' => 'required|exists:accounts,id',
+        ]);
+
+        $data = [
+            'user_id' => auth()->id(),
+            'biller_id' => $this->billBillerId,
+            'category_id' => $this->billCategoryId,
+            'subcategory_id' => $this->billSubcategoryId ?: null,
+            'account_id' => $this->billAccountId,
+            'amount' => $this->billAmount,
+            'due_date' => $this->billDueDate,
+        ];
+
+        if ($this->editingOneOffId) {
+            OneOffBill::where('user_id', auth()->id())->findOrFail($this->editingOneOffId)->update($data);
+            $this->closeBillModal();
+            $this->dispatch('toast', message: 'Bill updated.', type: 'success');
+
+            return;
+        }
+
+        OneOffBill::create($data);
+        $this->closeBillModal();
+        $this->dispatch('toast', message: 'Bill added.', type: 'success');
+
+        $count = OneOffBill::where('user_id', auth()->id())->where('biller_id', $data['biller_id'])->count();
+        if ($count === 2) {
+            $biller = Biller::find($data['biller_id']);
+            $this->promptBillerId = $biller->id;
+            $this->promptBillerName = $biller->name;
+            $this->showRecurringPromptModal = true;
+        }
+    }
+
+    private function saveRecurringFromModal(): void
+    {
+        $this->validate([
+            'billBillerId' => 'required|exists:billers,id',
+            'billFrequencyId' => 'required|exists:frequencies,id',
+            'billCategoryId' => 'required|exists:categories,id',
+            'billAccountId' => 'required|exists:accounts,id',
+            'billAmount' => 'required|numeric|min:0.01',
+            'billStartDate' => 'required|date',
+            'billEndDate' => 'nullable|date|after_or_equal:billStartDate',
+        ]);
+
+        RecurringBill::create([
+            'user_id' => auth()->id(),
+            'biller_id' => $this->billBillerId,
+            'frequency_id' => $this->billFrequencyId,
+            'category_id' => $this->billCategoryId,
+            'account_id' => $this->billAccountId,
+            'amount' => $this->billAmount,
+            'start_date' => $this->billStartDate,
+            'end_date' => $this->billEndDate ?: null,
+        ]);
+
+        app(RecurringBillService::class)->clearCache(auth()->id(), $this->year, $this->month);
+        $this->closeBillModal();
+        $this->dispatch('toast', message: 'Recurring bill created.', type: 'success');
+    }
+
+    public function acceptRecurringPrompt(): void
+    {
+        $last = OneOffBill::where('user_id', auth()->id())
+            ->where('biller_id', $this->promptBillerId)
+            ->orderByDesc('due_date')
+            ->first();
+
+        $this->resetBillForm();
+        $this->isRecurring = true;
+        $this->editingOneOffId = null;
+        $this->billBillerId = (string) $this->promptBillerId;
+        $this->billerSearch = $this->promptBillerName;
+        $this->billAmount = $last ? number_format((float) $last->amount, 2, '.', '') : '';
+        $this->billCategoryId = $last ? (string) $last->category_id : '';
+        $this->billAccountId = $last ? (string) $last->account_id : '';
+        $this->billStartDate = today()->toDateString();
+        $this->showRecurringPromptModal = false;
+        $this->promptBillerId = null;
+        $this->promptBillerName = '';
+        $this->showBillModal = true;
+    }
+
+    public function dismissRecurringPrompt(): void
+    {
+        $this->showRecurringPromptModal = false;
+        $this->promptBillerId = null;
+        $this->promptBillerName = '';
+    }
+
+    public function switchToDeleteOneOff(): void
+    {
+        $id = $this->editingOneOffId;
+        $this->closeBillModal();
+        $this->confirmDeleteOneOff($id);
+    }
+
+    public function confirmDeleteOneOff(int $id): void
+    {
+        OneOffBill::where('user_id', auth()->id())->findOrFail($id);
+        $this->deletingOneOffId = $id;
+        $this->showDeleteOneOffModal = true;
+    }
+
+    public function deleteOneOff(): void
+    {
+        OneOffBill::where('user_id', auth()->id())->findOrFail($this->deletingOneOffId)->delete();
+        $this->cancelDeleteOneOff();
+        $this->dispatch('toast', message: 'Bill deleted.', type: 'success');
+    }
+
+    public function cancelDeleteOneOff(): void
+    {
+        $this->showDeleteOneOffModal = false;
+        $this->deletingOneOffId = null;
+    }
+
+    private function resetBillForm(): void
+    {
+        $this->billBillerId = '';
+        $this->billerSearch = '';
+        $this->billAmount = '';
+        $this->billDueDate = '';
+        $this->billCategoryId = '';
+        $this->billSubcategoryId = '';
+        $this->billAccountId = '';
+        $this->billFrequencyId = '';
+        $this->billStartDate = '';
+        $this->billEndDate = '';
+        $this->isRecurring = false;
+        $this->resetValidation();
+    }
+
     public function render()
     {
         $user = auth()->user();
         $service = app(RecurringBillService::class);
         $instances = $service->getForMonth($user->id, $this->year, $this->month);
         $today = now()->toDateString();
+
+        $oneOffBills = OneOffBill::with(['biller', 'category', 'subcategory', 'account'])
+            ->where('user_id', $user->id)
+            ->whereYear('due_date', $this->year)
+            ->whereMonth('due_date', $this->month)
+            ->get();
 
         // Build per-day status lookup for calendar indicators
         $dayStatus = [];
@@ -363,6 +687,14 @@ class BillsIndex extends Component
             $dayStatus[$key] ??= ['all_paid' => true, 'count' => 0];
             $dayStatus[$key]['count']++;
             if (! $inst->isPaid) {
+                $dayStatus[$key]['all_paid'] = false;
+            }
+        }
+        foreach ($oneOffBills as $bill) {
+            $key = $bill->due_date->toDateString();
+            $dayStatus[$key] ??= ['all_paid' => true, 'count' => 0];
+            $dayStatus[$key]['count']++;
+            if (! $bill->is_paid) {
                 $dayStatus[$key]['all_paid'] = false;
             }
         }
@@ -403,18 +735,46 @@ class BillsIndex extends Component
 
         $listInstances = $listInstances->values()->all();
 
+        // ── Filtered one-off bill list (mirrors $listInstances filtering) ─
+        $listOneOffBills = $oneOffBills;
+
+        if ($this->selectedDate) {
+            $listOneOffBills = $listOneOffBills->filter(
+                fn ($b) => $b->due_date->toDateString() === $this->selectedDate
+            );
+        } else {
+            if ($this->search) {
+                $s = strtolower($this->search);
+                $listOneOffBills = $listOneOffBills->filter(
+                    fn ($b) => str_contains(strtolower($b->biller->name), $s)
+                );
+            }
+            if ($this->tab === 'paid') {
+                $listOneOffBills = $listOneOffBills->filter(fn ($b) => $b->is_paid);
+            } elseif ($this->tab === 'unpaid') {
+                $listOneOffBills = $listOneOffBills->filter(fn ($b) => ! $b->is_paid);
+            }
+        }
+
+        $listOneOffBills = $listOneOffBills->sortBy('due_date')->values();
+
         // ── Month totals (always full month, unaffected by day selection) ─
-        $paidTotal = collect($instances)->filter(fn ($b) => $b->isPaid)->sum(fn ($b) => $b->getAmount());
-        $unpaidTotal = collect($instances)->filter(fn ($b) => ! $b->isPaid)->sum(fn ($b) => $b->getAmount());
+        $paidTotal = collect($instances)->filter(fn ($b) => $b->isPaid)->sum(fn ($b) => $b->getAmount())
+            + $oneOffBills->where('is_paid', true)->sum(fn ($b) => (float) $b->amount);
+        $unpaidTotal = collect($instances)->filter(fn ($b) => ! $b->isPaid)->sum(fn ($b) => $b->getAmount())
+            + $oneOffBills->where('is_paid', false)->sum(fn ($b) => (float) $b->amount);
         $periodLabel = $firstOfMonth->format('F Y');
 
         $categories = Category::orderBy('name')->get();
+        $subcategories = Subcategory::orderBy('name')->get();
         $accounts = Account::where('user_id', $user->id)->orderBy('name')->get();
+        $billers = Biller::where('user_id', $user->id)->orderBy('name')->get();
+        $frequencies = Frequency::orderBy('id')->get();
 
         return view('livewire.bills-index', compact(
-            'instances', 'listInstances', 'dayStatus', 'today',
+            'instances', 'listInstances', 'listOneOffBills', 'dayStatus', 'today',
             'weekDays', 'calDays', 'paidTotal', 'unpaidTotal', 'periodLabel',
-            'categories', 'accounts'
+            'categories', 'subcategories', 'accounts', 'billers', 'frequencies'
         ))->layout('layouts.app', ['title' => 'Bills']);
     }
 

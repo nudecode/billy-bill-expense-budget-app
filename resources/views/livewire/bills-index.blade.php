@@ -29,7 +29,7 @@
             </div>
         </div>
 
-        <button class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-600 text-white text-[13px] font-semibold rounded-lg hover:bg-green-700 transition-colors">
+        <button wire:click="openAddBillModal" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-600 text-white text-[13px] font-semibold rounded-lg hover:bg-green-700 transition-colors">
             <i class="fa-solid fa-plus text-xs"></i> Add Bill
         </button>
     </div>
@@ -209,7 +209,7 @@
                 <div class="flex items-center gap-1 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                     @if(!$bill->isPaid)
                     @php $isOverdue = $bill->date->toDateString() < $today; @endphp
-                    <button wire:click="openPayModal({{ $bill->rule->id }}, '{{ $bill->date->toDateString() }}')"
+                    <button wire:click="openPayModal('recurring', {{ $bill->rule->id }}, '{{ $bill->date->toDateString() }}')"
                             class="w-8 h-8 flex items-center justify-center rounded-lg border transition-all {{ $isOverdue ? 'border-red-200 bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-600' : 'border-slate-200 bg-white text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200' }}"
                             title="Record Payment">
                         <i class="fa-solid fa-dollar-sign text-sm"></i>
@@ -226,12 +226,59 @@
             </div>
         </div>
         @empty
+        @if($listOneOffBills->isEmpty())
         <div class="px-5 py-10 text-center">
             <i class="fa-regular fa-calendar-days text-3xl text-slate-300 mb-3"></i>
             <div class="text-[14px] font-semibold text-slate-600">No bills on this day</div>
             <div class="text-[13px] text-slate-400 mt-1">Tap + Add Bill to schedule one.</div>
         </div>
+        @endif
         @endforelse
+        @foreach($listOneOffBills as $bill)
+        <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 last:border-0 hover:bg-slate-50/50 transition-colors group">
+            <div class="flex items-center gap-3 min-w-0">
+                <div class="w-9 h-9 rounded-lg flex items-center justify-center text-[13px] font-bold flex-shrink-0"
+                     style="background: hsl({{ crc32($bill->biller->name) % 360 }}, 70%, 92%); color: hsl({{ crc32($bill->biller->name) % 360 }}, 60%, 35%)">
+                    {{ strtoupper(substr($bill->biller->name, 0, 1)) }}
+                </div>
+                <div class="min-w-0">
+                    <div class="text-[14px] font-semibold text-slate-900 truncate">{{ $bill->biller->name }}</div>
+                    <div class="text-[11.5px] text-slate-400">{{ $bill->category->name }} · One-off</div>
+                </div>
+            </div>
+            <div class="flex items-end gap-3 flex-shrink-0">
+                <div class="text-right">
+                    <div class="font-mono text-[15px] font-bold text-slate-900 leading-none">${{ number_format($bill->amount, 2) }}</div>
+                    @if($bill->is_paid)
+                        <span class="block text-[11px] font-semibold text-emerald-600 mt-1 leading-none">Paid</span>
+                    @else
+                        @php $isOverdue = $bill->due_date->toDateString() < $today; @endphp
+                        <span class="block text-[11px] font-semibold mt-1 leading-none {{ $isOverdue ? 'text-red-500' : 'text-slate-400' }}">{{ $isOverdue ? 'Overdue' : 'Due' }}</span>
+                    @endif
+                </div>
+                <div class="flex items-center gap-1 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
+                    @if(!$bill->is_paid)
+                    @php $isOverdue = $bill->due_date->toDateString() < $today; @endphp
+                    <button wire:click="openPayModal('oneoff', {{ $bill->id }})"
+                            class="w-8 h-8 flex items-center justify-center rounded-lg border transition-all {{ $isOverdue ? 'border-red-200 bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-600' : 'border-slate-200 bg-white text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200' }}"
+                            title="Record Payment">
+                        <i class="fa-solid fa-dollar-sign text-sm"></i>
+                    </button>
+                    @endif
+                    <button wire:click="openEditOneOff({{ $bill->id }})"
+                            class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-700 transition-all"
+                            title="Edit">
+                        <i class="fa-regular fa-pen-to-square text-sm"></i>
+                    </button>
+                    <button wire:click="confirmDeleteOneOff({{ $bill->id }})"
+                            class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all"
+                            title="Delete">
+                        <i class="fa-regular fa-trash-can text-sm"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        @endforeach
     </div>
 
     @else
@@ -303,7 +350,7 @@
                             <div class="flex items-center gap-1 justify-end lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                                 @if(!$bill->isPaid)
                                 @php $isOverdue = $bill->date->toDateString() < $today; @endphp
-                                <button wire:click="openPayModal({{ $bill->rule->id }}, '{{ $bill->date->toDateString() }}')"
+                                <button wire:click="openPayModal('recurring', {{ $bill->rule->id }}, '{{ $bill->date->toDateString() }}')"
                                         class="w-8 h-8 flex items-center justify-center rounded-lg border transition-all {{ $isOverdue ? 'border-red-200 bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-600' : 'border-slate-200 bg-white text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200' }}"
                                         title="Record Payment">
                                     <i class="fa-solid fa-dollar-sign text-sm"></i>
@@ -320,10 +367,396 @@
                         </td>
                     </tr>
                     @empty
+                    @if($listOneOffBills->isEmpty())
                     <tr><td colspan="6" class="px-5 py-10 text-center text-slate-400 text-[13px]">No bills found for this period.</td></tr>
+                    @endif
                     @endforelse
+                    @foreach($listOneOffBills as $bill)
+                    <tr class="hover:bg-slate-50/50 transition-colors group">
+                        <td class="px-5 py-3.5">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-8 h-8 rounded-lg flex items-center justify-center text-[12px] font-bold flex-shrink-0"
+                                     style="background: hsl({{ crc32($bill->biller->name) % 360 }}, 70%, 92%); color: hsl({{ crc32($bill->biller->name) % 360 }}, 60%, 35%)">
+                                    {{ strtoupper(substr($bill->biller->name, 0, 1)) }}
+                                </div>
+                                <div>
+                                    <div class="text-[13.5px] font-semibold text-slate-900">{{ $bill->biller->name }}</div>
+                                    <div class="text-[11px] text-slate-400">{{ $bill->due_date->format('d M Y') }} · One-off</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-5 py-3.5 hidden md:table-cell">
+                            <span class="inline-flex px-2.5 py-0.5 rounded-full text-[11.5px] font-medium bg-slate-100 text-slate-600 border border-slate-200">{{ $bill->category->name }}</span>
+                        </td>
+                        <td class="px-5 py-3.5 font-mono text-[12.5px] text-slate-700 hidden sm:table-cell">{{ $bill->due_date->format('d M Y') }}</td>
+                        <td class="px-5 py-3.5">
+                            <div class="font-mono text-[13px] font-medium text-slate-900">${{ number_format($bill->amount, 2) }}</div>
+                            @if($bill->is_paid)
+                                <span class="block sm:hidden text-[11px] font-semibold text-emerald-600 mt-0.5">Paid</span>
+                            @elseif($bill->due_date->toDateString() < $today)
+                                <span class="block sm:hidden text-[11px] font-semibold text-red-500 mt-0.5">Overdue</span>
+                            @else
+                                <span class="block sm:hidden text-[11px] font-semibold text-slate-400 mt-0.5">Due</span>
+                            @endif
+                        </td>
+                        <td class="px-5 py-3.5 hidden sm:table-cell">
+                            @if($bill->is_paid)
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11.5px] font-semibold bg-emerald-50 text-emerald-600"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0"></span>Paid</span>
+                            @elseif($bill->due_date->toDateString() < $today)
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11.5px] font-semibold bg-red-50 text-red-600"><span class="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0"></span>Overdue</span>
+                            @else
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11.5px] font-semibold bg-slate-100 text-slate-500"><span class="w-1.5 h-1.5 rounded-full bg-slate-400 flex-shrink-0"></span>Due</span>
+                            @endif
+                        </td>
+                        <td class="px-2 sm:px-5 py-3.5">
+                            <div class="flex items-center gap-1 justify-end lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
+                                @if(!$bill->is_paid)
+                                @php $isOverdue = $bill->due_date->toDateString() < $today; @endphp
+                                <button wire:click="openPayModal('oneoff', {{ $bill->id }})"
+                                        class="w-8 h-8 flex items-center justify-center rounded-lg border transition-all {{ $isOverdue ? 'border-red-200 bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-600' : 'border-slate-200 bg-white text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200' }}"
+                                        title="Record Payment">
+                                    <i class="fa-solid fa-dollar-sign text-sm"></i>
+                                </button>
+                                @endif
+                                <button wire:click="openEditOneOff({{ $bill->id }})"
+                                        class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-700 transition-all"
+                                        title="Edit">
+                                    <i class="fa-regular fa-pen-to-square text-sm"></i>
+                                </button>
+                                <button wire:click="confirmDeleteOneOff({{ $bill->id }})"
+                                        class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all"
+                                        title="Delete">
+                                    <i class="fa-regular fa-trash-can text-sm"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforeach
                 </tbody>
             </table>
+        </div>
+    </div>
+    @endif
+
+    {{-- ── ADD/EDIT BILL MODAL ─────────────────────────────────────────── --}}
+    @if($showBillModal)
+    <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+         x-data="{ open: false }"
+         x-init="$nextTick(() => open = true)"
+         @keydown.escape.window="$wire.closeBillModal()">
+
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"
+             x-show="open" x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+             @click="$wire.closeBillModal()"></div>
+
+        <div class="relative bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl shadow-xl z-10 max-h-[90vh] overflow-y-auto"
+             x-show="open"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 translate-y-4"
+             x-transition:enter-end="opacity-100 translate-y-0">
+
+            {{-- Header --}}
+            <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center">
+                        <i class="fa-solid fa-plus text-green-600 text-sm"></i>
+                    </div>
+                    <h2 class="text-[15px] font-bold text-slate-900">{{ $editingOneOffId ? 'Edit Bill' : 'Add Bill' }}</h2>
+                </div>
+                <button wire:click="closeBillModal()" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-all">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            {{-- Body --}}
+            <div class="px-5 py-4 space-y-4">
+
+                @if(!$editingOneOffId)
+                <div class="flex items-center justify-between px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+                    <span class="text-[13px] font-semibold text-slate-700">Is this a recurring bill?</span>
+                    <button type="button" wire:click="$set('isRecurring', {{ $isRecurring ? 'false' : 'true' }})"
+                            class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors {{ $isRecurring ? 'bg-green-600' : 'bg-slate-300' }}">
+                        <span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform {{ $isRecurring ? 'translate-x-6' : 'translate-x-1' }}"></span>
+                    </button>
+                </div>
+                @endif
+
+                {{-- Biller autocomplete (shared by both modes) --}}
+                <div class="relative"
+                     x-data="{
+                        open: false,
+                        search: @js($billerSearch),
+                        billers: @js($billers->map(fn ($b) => ['id' => $b->id, 'name' => $b->name])->values()),
+                        get filtered() {
+                            const q = (this.search || '').toLowerCase();
+                            if (!q) return this.billers;
+                            return this.billers.filter(b => b.name.toLowerCase().includes(q));
+                        }
+                     }">
+                    <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Biller</label>
+                    <input type="text" x-model="search" @focus="open = true" @click.away="open = false"
+                           placeholder="Search billers…" autocomplete="off"
+                           class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('billBillerId') border-red-400 @enderror">
+                    <div x-show="open && filtered.length > 0" x-cloak
+                         class="absolute z-20 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                        <template x-for="b in filtered" :key="b.id">
+                            <button type="button" @click="$wire.selectBiller(b.id); search = b.name; open = false"
+                                    class="w-full text-left px-3 py-2 text-[13px] text-slate-700 hover:bg-slate-50 transition-colors" x-text="b.name"></button>
+                        </template>
+                    </div>
+                    @error('billBillerId') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
+                </div>
+
+                @if(!$isRecurring)
+                {{-- One-off fields --}}
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Amount</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-mono text-[13px]">$</span>
+                            <input wire:model="billAmount" type="number" step="0.01" min="0.01"
+                                   class="w-full pl-7 pr-3 py-2 border border-slate-200 rounded-lg font-mono text-[13.5px] focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('billAmount') border-red-400 @enderror">
+                        </div>
+                        @error('billAmount') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Due Date</label>
+                        <input wire:model="billDueDate" type="date"
+                               class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('billDueDate') border-red-400 @enderror">
+                        @error('billDueDate') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Category</label>
+                        <select wire:model.live="billCategoryId"
+                                class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] bg-white focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('billCategoryId') border-red-400 @enderror">
+                            <option value="">Select…</option>
+                            @foreach($categories as $cat)
+                                <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('billCategoryId') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Subcategory <span class="font-normal normal-case tracking-normal text-slate-300">(optional)</span></label>
+                        <select wire:model="billSubcategoryId"
+                                class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] bg-white focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('billSubcategoryId') border-red-400 @enderror">
+                            <option value="">None</option>
+                            @foreach($subcategories->where('category_id', $billCategoryId) as $sub)
+                                <option value="{{ $sub->id }}">{{ $sub->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('billSubcategoryId') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Account</label>
+                    <select wire:model="billAccountId"
+                            class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] bg-white focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('billAccountId') border-red-400 @enderror">
+                        <option value="">Select…</option>
+                        @foreach($accounts as $account)
+                            <option value="{{ $account->id }}">{{ $account->name }}</option>
+                        @endforeach
+                    </select>
+                    @error('billAccountId') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
+                </div>
+
+                @if(!$editingOneOffId)
+                <p class="text-[11.5px] text-slate-400">Select a biller from the list above. New billers can be added from the Billers page.</p>
+                @endif
+
+                @else
+                {{-- Recurring fields (mirrors Recurring Bills page) --}}
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Amount</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-mono text-[13px]">$</span>
+                            <input wire:model="billAmount" type="number" step="0.01" min="0.01"
+                                   class="w-full pl-7 pr-3 py-2 border border-slate-200 rounded-lg font-mono text-[13.5px] focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('billAmount') border-red-400 @enderror">
+                        </div>
+                        @error('billAmount') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Frequency</label>
+                        <select wire:model="billFrequencyId"
+                                class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] bg-white focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('billFrequencyId') border-red-400 @enderror">
+                            <option value="">Select…</option>
+                            @foreach($frequencies as $freq)
+                                <option value="{{ $freq->id }}">{{ $freq->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('billFrequencyId') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Category</label>
+                        <select wire:model="billCategoryId"
+                                class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] bg-white focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('billCategoryId') border-red-400 @enderror">
+                            <option value="">Select…</option>
+                            @foreach($categories as $cat)
+                                <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('billCategoryId') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Account</label>
+                        <select wire:model="billAccountId"
+                                class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] bg-white focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('billAccountId') border-red-400 @enderror">
+                            <option value="">Select…</option>
+                            @foreach($accounts as $account)
+                                <option value="{{ $account->id }}">{{ $account->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('billAccountId') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Start Date</label>
+                    <input wire:model="billStartDate" type="date"
+                           class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('billStartDate') border-red-400 @enderror">
+                    @error('billStartDate') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">End Date</label>
+                    <input wire:model="billEndDate" type="date"
+                           class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('billEndDate') border-red-400 @enderror">
+                    <p class="text-[11.5px] text-slate-400 mt-1">Leave blank for a bill with no end date</p>
+                    <div class="flex gap-1.5 mt-2">
+                        <button type="button" wire:click="setBillEndDateOffset('3m')" class="px-2.5 py-1 text-[11.5px] font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors">3 mo</button>
+                        <button type="button" wire:click="setBillEndDateOffset('6m')" class="px-2.5 py-1 text-[11.5px] font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors">6 mo</button>
+                        <button type="button" wire:click="setBillEndDateOffset('1y')" class="px-2.5 py-1 text-[11.5px] font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors">1 yr</button>
+                        <button type="button" wire:click="setBillEndDateOffset('2y')" class="px-2.5 py-1 text-[11.5px] font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors">2 yr</button>
+                    </div>
+                    @error('billEndDate') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
+                </div>
+                @endif
+
+                @if($editingOneOffId)
+                <button wire:click="switchToDeleteOneOff()" type="button"
+                        class="text-[12.5px] text-red-500 hover:text-red-600 font-semibold transition-colors">
+                    <i class="fa-regular fa-trash-can mr-1"></i>Delete this bill instead
+                </button>
+                @endif
+            </div>
+
+            {{-- Footer --}}
+            <div class="flex items-center justify-end gap-3 px-5 py-4 border-t border-slate-100">
+                <button wire:click="closeBillModal()" type="button"
+                        class="px-4 py-2 text-[13px] font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition-all">
+                    Cancel
+                </button>
+                <button wire:click="saveBill()" wire:loading.attr="disabled" wire:target="saveBill"
+                        class="flex items-center gap-2 px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-[13px] font-semibold rounded-lg transition-all disabled:opacity-60">
+                    <span wire:loading.remove wire:target="saveBill">Save</span>
+                    <span wire:loading wire:target="saveBill" class="flex items-center gap-1.5"><i class="fa-solid fa-spinner fa-spin text-xs"></i> Saving…</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- ── DELETE ONE-OFF BILL MODAL ───────────────────────────────────── --}}
+    @if($showDeleteOneOffModal)
+    <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+         x-data="{ open: false }"
+         x-init="$nextTick(() => open = true)"
+         @keydown.escape.window="$wire.cancelDeleteOneOff()">
+
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"
+             x-show="open" x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+             @click="$wire.cancelDeleteOneOff()"></div>
+
+        <div class="relative bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl shadow-xl z-10"
+             x-show="open"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 translate-y-4"
+             x-transition:enter-end="opacity-100 translate-y-0">
+
+            <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center">
+                        <i class="fa-regular fa-trash-can text-red-500 text-sm"></i>
+                    </div>
+                    <h2 class="text-[15px] font-bold text-slate-900">Delete Bill</h2>
+                </div>
+                <button wire:click="cancelDeleteOneOff()" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 transition-all">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="px-5 py-4">
+                <p class="text-[13.5px] text-slate-600 leading-relaxed">
+                    Are you sure you want to delete this bill? This cannot be undone.
+                </p>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 px-5 py-4 border-t border-slate-100">
+                <button wire:click="cancelDeleteOneOff()" type="button"
+                        class="px-4 py-2 text-[13px] font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition-all">
+                    Cancel
+                </button>
+                <button wire:click="deleteOneOff()" wire:loading.attr="disabled" wire:target="deleteOneOff"
+                        class="flex items-center gap-2 px-5 py-2 bg-red-600 hover:bg-red-700 text-white text-[13px] font-semibold rounded-lg transition-all disabled:opacity-60">
+                    <span wire:loading.remove wire:target="deleteOneOff">Delete</span>
+                    <span wire:loading wire:target="deleteOneOff" class="flex items-center gap-1.5"><i class="fa-solid fa-spinner fa-spin text-xs"></i> Deleting…</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- ── RECURRING PROMPT MODAL ──────────────────────────────────────── --}}
+    @if($showRecurringPromptModal)
+    <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+         x-data="{ open: false }"
+         x-init="$nextTick(() => open = true)"
+         @keydown.escape.window="$wire.dismissRecurringPrompt()">
+
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"
+             x-show="open" x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+             @click="$wire.dismissRecurringPrompt()"></div>
+
+        <div class="relative bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl shadow-xl z-10"
+             x-show="open"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 translate-y-4"
+             x-transition:enter-end="opacity-100 translate-y-0">
+
+            <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center">
+                        <i class="fa-regular fa-lightbulb text-amber-500 text-sm"></i>
+                    </div>
+                    <h2 class="text-[15px] font-bold text-slate-900">Set Up Recurring Bill?</h2>
+                </div>
+                <button wire:click="dismissRecurringPrompt()" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 transition-all">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="px-5 py-4">
+                <p class="text-[13.5px] text-slate-600 leading-relaxed">
+                    You've added <span class="font-semibold text-slate-900">{{ $promptBillerName }}</span> manually twice. Set up a recurring bill so it's tracked automatically each period?
+                </p>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 px-5 py-4 border-t border-slate-100">
+                <button wire:click="dismissRecurringPrompt()" type="button"
+                        class="px-4 py-2 text-[13px] font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition-all">
+                    No thanks
+                </button>
+                <button wire:click="acceptRecurringPrompt()"
+                        class="px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-[13px] font-semibold rounded-lg transition-all">
+                    Set up recurring bill
+                </button>
+            </div>
         </div>
     </div>
     @endif
@@ -381,6 +814,7 @@
                     @error('payAmount') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
                 </div>
 
+                @if($payType === 'recurring')
                 {{-- Reference number --}}
                 <div>
                     <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Reference / Receipt No. <span class="font-normal normal-case tracking-normal text-slate-300">(optional)</span></label>
@@ -396,6 +830,7 @@
                               class="w-full px-3 py-2 border border-slate-200 rounded-lg text-[13.5px] resize-none focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all @error('payNotes') border-red-400 @enderror"></textarea>
                     @error('payNotes') <p class="text-[11.5px] text-red-500 mt-1">{{ $message }}</p> @enderror
                 </div>
+                @endif
             </div>
 
             {{-- Footer --}}
