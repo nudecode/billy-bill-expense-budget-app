@@ -261,6 +261,97 @@ class OneOffCrudTest extends TestCase
         $this->assertDatabaseMissing('one_off_income', ['id' => $income->id]);
     }
 
+    public function test_viewing_payment_details_for_paid_one_off_bill(): void
+    {
+        $bill = OneOffBill::create([
+            'user_id' => $this->user->id,
+            'biller_id' => $this->biller->id,
+            'category_id' => $this->category->id,
+            'account_id' => $this->account->id,
+            'amount' => 20,
+            'due_date' => today(),
+            'is_paid' => true,
+            'date_paid' => today(),
+        ]);
+
+        $this->actingAs($this->user);
+
+        $component = $this->billComponent();
+        app()->call([$component, 'viewPaymentDetails'], ['type' => 'oneoff', 'id' => $bill->id]);
+
+        $this->assertTrue($component->showPaymentDetailModal);
+
+        $view = app()->call([$component, 'render']);
+        $this->assertSame($bill->id, $view->getData()['viewingPaymentDetail']->id);
+    }
+
+    public function test_viewing_payment_details_for_paid_recurring_occurrence(): void
+    {
+        $rule = RecurringBill::factory()->create([
+            'user_id' => $this->user->id,
+            'biller_id' => $this->biller->id,
+            'category_id' => $this->category->id,
+            'account_id' => $this->account->id,
+            'frequency_id' => $this->frequency->id,
+            'start_date' => now()->subMonth(),
+            'end_date' => now()->addYear(),
+        ]);
+
+        $this->actingAs($this->user);
+        $date = today()->toDateString();
+
+        $payer = $this->billComponent();
+        app()->call([$payer, 'openPayModal'], ['type' => 'recurring', 'id' => $rule->id, 'date' => $date]);
+        app()->call([$payer, 'savePayment']);
+
+        $component = $this->billComponent();
+        app()->call([$component, 'viewPaymentDetails'], ['type' => 'recurring', 'id' => $rule->id, 'date' => $date]);
+
+        $view = app()->call([$component, 'render']);
+        $this->assertSame($rule->id, $view->getData()['viewingPaymentDetail']->recurring_bill_id);
+    }
+
+    public function test_select_biller_does_not_overwrite_already_chosen_category(): void
+    {
+        $otherCategory = Category::factory()->create();
+
+        OneOffBill::create([
+            'user_id' => $this->user->id,
+            'biller_id' => $this->biller->id,
+            'category_id' => $otherCategory->id,
+            'account_id' => $this->account->id,
+            'amount' => 20,
+            'due_date' => today(),
+        ]);
+
+        $this->actingAs($this->user);
+
+        $component = $this->billComponent();
+        app()->call([$component, 'openAddBillModal']);
+        $component->billCategoryId = (string) $this->category->id;
+        app()->call([$component, 'selectBiller'], ['billerId' => $this->biller->id]);
+
+        $this->assertSame((string) $this->category->id, $component->billCategoryId);
+    }
+
+    public function test_quick_add_biller_creates_and_selects_it(): void
+    {
+        $this->actingAs($this->user);
+
+        $component = $this->billComponent();
+        app()->call([$component, 'openQuickAddBiller']);
+        $component->quickBillerName = 'Origin Energy';
+        app()->call([$component, 'saveQuickAddBiller']);
+
+        $this->assertDatabaseHas('billers', [
+            'user_id' => $this->user->id,
+            'name' => 'Origin Energy',
+        ]);
+        $this->assertFalse($component->showQuickAddBillerModal);
+        $this->assertSame('Origin Energy', $component->billerSearch);
+        $this->assertNotSame('', $component->billBillerId);
+    }
+
     public function test_can_create_recurring_income_via_same_modal(): void
     {
         $this->actingAs($this->user);

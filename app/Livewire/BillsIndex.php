@@ -57,6 +57,15 @@ class BillsIndex extends Component
 
     public string $payNotes = '';
 
+    // ── Payment detail modal (paid bills, both types) ───────────────────────
+    public bool $showPaymentDetailModal = false;
+
+    public string $viewingDetailType = 'recurring'; // 'recurring' | 'oneoff'
+
+    public ?int $viewingDetailId = null;
+
+    public string $viewingDetailDate = '';
+
     // ── Edit occurrence modal (unpaid bills only) ───────────────────────────
     public bool $showEditModal = false;
 
@@ -123,6 +132,11 @@ class BillsIndex extends Component
     public ?int $promptBillerId = null;
 
     public string $promptBillerName = '';
+
+    // ── Quick-add biller modal ────────────────────────────────────────────────
+    public bool $showQuickAddBillerModal = false;
+
+    public string $quickBillerName = '';
 
     public function mount(): void
     {
@@ -264,6 +278,21 @@ class BillsIndex extends Component
         app(RecurringBillService::class)->clearCache($user->id, $this->year, $this->month);
         $this->closePayModal();
         $this->dispatch('toast', message: 'Payment recorded.', type: 'success');
+    }
+
+    public function viewPaymentDetails(string $type, int $id, ?string $date = null): void
+    {
+        $this->viewingDetailType = $type;
+        $this->viewingDetailId = $id;
+        $this->viewingDetailDate = $date ?? '';
+        $this->showPaymentDetailModal = true;
+    }
+
+    public function closePaymentDetailModal(): void
+    {
+        $this->showPaymentDetailModal = false;
+        $this->viewingDetailId = null;
+        $this->viewingDetailDate = '';
     }
 
     public function openEditOccurrence(int $ruleId, string $date): void
@@ -481,8 +510,10 @@ class BillsIndex extends Component
             if ($this->billAmount === '') {
                 $this->billAmount = number_format((float) $lastOneOff->amount, 2, '.', '');
             }
-            $this->billCategoryId = (string) $lastOneOff->category_id;
-            $this->billSubcategoryId = $lastOneOff->subcategory_id ? (string) $lastOneOff->subcategory_id : '';
+            if ($this->billCategoryId === '') {
+                $this->billCategoryId = (string) $lastOneOff->category_id;
+                $this->billSubcategoryId = $lastOneOff->subcategory_id ? (string) $lastOneOff->subcategory_id : '';
+            }
 
             return;
         }
@@ -497,13 +528,56 @@ class BillsIndex extends Component
             if ($this->billAmount === '') {
                 $this->billAmount = number_format((float) $activeRecurring->amount, 2, '.', '');
             }
-            $this->billCategoryId = (string) $activeRecurring->category_id;
+            if ($this->billCategoryId === '') {
+                $this->billCategoryId = (string) $activeRecurring->category_id;
+            }
         }
     }
 
     public function updatedBillCategoryId(): void
     {
         $this->billSubcategoryId = '';
+    }
+
+    public function toggleRecurring(): void
+    {
+        if ($this->isRecurring) {
+            $this->billDueDate = $this->billStartDate;
+            $this->isRecurring = false;
+        } else {
+            $this->billStartDate = $this->billDueDate;
+            $this->isRecurring = true;
+        }
+    }
+
+    public function openQuickAddBiller(): void
+    {
+        $this->quickBillerName = '';
+        $this->resetValidation();
+        $this->showQuickAddBillerModal = true;
+    }
+
+    public function closeQuickAddBiller(): void
+    {
+        $this->showQuickAddBillerModal = false;
+        $this->quickBillerName = '';
+        $this->resetValidation();
+    }
+
+    public function saveQuickAddBiller(): void
+    {
+        $this->validate(['quickBillerName' => 'required|string|max:150']);
+
+        $biller = Biller::create([
+            'user_id' => auth()->id(),
+            'name' => trim($this->quickBillerName),
+        ]);
+
+        $this->billBillerId = (string) $biller->id;
+        $this->billerSearch = $biller->name;
+        $this->closeQuickAddBiller();
+        $this->dispatch('biller-quick-added', id: $biller->id, name: $biller->name);
+        $this->dispatch('toast', message: 'Biller added.', type: 'success');
     }
 
     public function setBillEndDateOffset(string $period): void
@@ -771,10 +845,21 @@ class BillsIndex extends Component
         $billers = Biller::where('user_id', $user->id)->orderBy('name')->get();
         $frequencies = Frequency::orderBy('id')->get();
 
+        $viewingPaymentDetail = null;
+        if ($this->showPaymentDetailModal && $this->viewingDetailId) {
+            $viewingPaymentDetail = $this->viewingDetailType === 'oneoff'
+                ? OneOffBill::with(['biller', 'category', 'account'])->find($this->viewingDetailId)
+                : Payment::with(['biller', 'category', 'account'])
+                    ->where('recurring_bill_id', $this->viewingDetailId)
+                    ->whereDate('recurring_bill_date', $this->viewingDetailDate)
+                    ->first();
+        }
+
         return view('livewire.bills-index', compact(
             'instances', 'listInstances', 'listOneOffBills', 'dayStatus', 'today',
             'weekDays', 'calDays', 'paidTotal', 'unpaidTotal', 'periodLabel',
-            'categories', 'subcategories', 'accounts', 'billers', 'frequencies'
+            'categories', 'subcategories', 'accounts', 'billers', 'frequencies',
+            'viewingPaymentDetail'
         ))->layout('layouts.app', ['title' => 'Bills']);
     }
 

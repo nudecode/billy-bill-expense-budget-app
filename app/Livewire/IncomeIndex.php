@@ -285,6 +285,17 @@ class IncomeIndex extends Component
         $this->resetIncomeForm();
     }
 
+    public function toggleRecurringIncome(): void
+    {
+        if ($this->isRecurringIncome) {
+            $this->incomeDate = $this->incomeStartDate;
+            $this->isRecurringIncome = false;
+        } else {
+            $this->incomeStartDate = $this->incomeDate;
+            $this->isRecurringIncome = true;
+        }
+    }
+
     public function saveIncome(): void
     {
         if ($this->isRecurringIncome && ! $this->editingOneOffIncomeId) {
